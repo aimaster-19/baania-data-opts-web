@@ -40,6 +40,7 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
           label='ราคาเริ่มต้น/ยูนิต'
           name='price_start_per_unit'
           placeholder='เช่น 50000'
+          type='number'
           formData={formData}
           handleInputChange={handleInputChange}
         />
@@ -47,6 +48,7 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
           label='ราคาสูงสุด/ยูนิต'
           name='price_end_per_unit'
           placeholder='เช่น 80000'
+          type='number'
           formData={formData}
           handleInputChange={handleInputChange}
         />
@@ -67,7 +69,8 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
         <ProjectInput
           label='อัตราผลตอบแทน (Yield %)'
           name='ratio_yield'
-          placeholder='เช่น 5%'
+          placeholder='เช่น 5'
+          type='number'
           formData={formData}
           handleInputChange={handleInputChange}
         />
@@ -158,20 +161,32 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
         handleInputChange={handleInputChange}
       />
       <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-        <ProjectInput
-          label='วันเริ่มโปรโมชั่น'
-          name='promotion_start'
-          placeholder='เช่น 2025-10-27T17:00:00.000Z'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='วันสิ้นสุดโปรโมชั่น'
-          name='promotion_stop'
-          placeholder='เช่น 2026-01-27T17:00:00.000Z'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
+        <div>
+          <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+            วันเริ่มโปรโมชั่น (Unix Timestamp)
+          </label>
+          <input
+            type='number'
+            name='promotion_start'
+            value={formData.promotion_start || ''}
+            onChange={handleInputChange}
+            placeholder='เช่น 1735308000'
+            className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+          />
+        </div>
+        <div>
+          <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+            วันสิ้นสุดโปรโมชั่น (Unix Timestamp)
+          </label>
+          <input
+            type='number'
+            name='promotion_stop'
+            value={formData.promotion_stop || ''}
+            onChange={handleInputChange}
+            placeholder='เช่น 1743343200'
+            className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+          />
+        </div>
       </div>
     </div>
   )

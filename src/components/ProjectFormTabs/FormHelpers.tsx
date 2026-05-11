@@ -7,9 +7,13 @@ interface FormInputProps {
   placeholder?: string
   type?: string
   required?: boolean
+  readOnly?: boolean
+  disabled?: boolean
   formData: ProjectFormData
   handleInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => void
 }
 
@@ -19,6 +23,8 @@ export const ProjectInput: React.FC<FormInputProps> = ({
   placeholder = '',
   type = 'text',
   required = false,
+  readOnly = false,
+  disabled = false,
   formData,
   handleInputChange
 }) => (
@@ -29,10 +35,22 @@ export const ProjectInput: React.FC<FormInputProps> = ({
     <input
       type={type}
       name={name}
-      value={(formData[name] as string) || ''}
+      value={
+        formData[name] != null && formData[name] !== 0
+          ? String(formData[name])
+          : type === 'number'
+            ? ''
+            : ''
+      }
       onChange={handleInputChange}
       placeholder={placeholder}
-      className='w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-sm'
+      readOnly={readOnly}
+      disabled={disabled}
+      className={`w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-sm ${
+        readOnly || disabled
+          ? 'bg-slate-50 cursor-not-allowed opacity-80'
+          : 'bg-white'
+      }`}
     />
   </div>
 )
@@ -70,7 +88,9 @@ interface FacilityCheckProps {
   infoName: keyof ProjectFormData
   formData: ProjectFormData
   handleInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => void
 }
 

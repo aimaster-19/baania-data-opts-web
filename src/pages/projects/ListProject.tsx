@@ -487,7 +487,9 @@ export default function ListProject() {
                         </button>
                         <button
                           title='แก้ไข'
-                          onClick={() => navigate(`/edit-project/${project.id}`)}
+                          onClick={() =>
+                            navigate(`/edit-project/${project.id}`)
+                          }
                           className='p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all cursor-pointer'
                         >
                           <Pencil className='w-4 h-4' />

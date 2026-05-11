@@ -1,9 +1,10 @@
 import React from 'react'
+import type { IDeveloper } from './developer'
 
 export type TabType =
   | 'basic'
   | 'address'
-  | 'developer'
+  | 'unittype'
   | 'detail'
   | 'facility'
   | 'financial'
@@ -27,47 +28,38 @@ export interface ProjectFormData {
   address_en: string
   subdistrict_th: string
   subdistrict_en: string
-  subdistrict_id: string
+  subdistrict_id: number
   district_th: string
   district_en: string
-  district_id: string
+  district_id: number
   province_th: string
   province_en: string
-  province_id: string
+  province_id: number
   postcode: string
   transport: string
   nearby: string
   neighbors: string
   landzone_name: string
-  lat: string
-  lon: string
+  lat: number
+  lon: number
   heading: string
 
   // 3. Developer
-  dev_display_name: string
-  dev_title_th: string
-  dev_title_en: string
-  dev_capital: string
-  dev_reg_num: string
-  dev_director: string
-  dev_address: string
-  dev_branch: string
-  dev_department: string
-  dev_email: string
-  dev_website: string
-  dev_contact_info: string
-  dev_business_segment: string
+  developer: IDeveloper
+
+  // 3b. Unit Types
+  unittype: UnitTypeItem[]
 
   // 4. Detail
-  area_rai: string
-  area_ngan: string
-  area_wa: string
-  num_unit: string
-  num_floor: string
-  num_lift: string
-  num_lift_service: string
-  ratio_parking: string
-  num_parking: string
+  area_rai: number
+  area_ngan: number
+  area_wa: number
+  num_unit: number
+  num_floor: number
+  num_lift: number
+  num_lift_service: number
+  ratio_parking: number
+  num_parking: number
   insurance_condition: string
   area_shared: string
 
@@ -90,22 +82,22 @@ export interface ProjectFormData {
   info_other_fac: string
 
   // 6. Financial & Promotions
-  price_start: string
-  price_end: string
-  price_land: string
-  price_start_per_unit: string
-  price_end_per_unit: string
+  price_start: number
+  price_end: number
+  price_land: number
+  price_start_per_unit: number
+  price_end_per_unit: number
   price_facility: string
   unitof_price_facility: string
-  ratio_yield: string
+  ratio_yield: number
   num_yield: string
   insurance_cost: string
   slogan: string
   highlight: string
   detail: string
   promotion: string
-  promotion_start: string
-  promotion_stop: string
+  promotion_start: number
+  promotion_stop: number
   start_price_not_found: boolean
   not_show_start_price: boolean
 
@@ -128,7 +120,19 @@ export interface ProjectFormData {
 export interface ProjectTabProps {
   formData: ProjectFormData
   handleInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => void
   setFormData: React.Dispatch<React.SetStateAction<ProjectFormData>>
+}
+
+export interface UnitTypeItem {
+  title: string
+  price_start: number
+  price_end: number
+  area_usable: number
+  num_bed: number
+  num_bath: number
+  sold_out: boolean
 }

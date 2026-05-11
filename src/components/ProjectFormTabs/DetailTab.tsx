@@ -77,14 +77,16 @@ export const DetailTab: React.FC<ProjectTabProps> = ({
         <ProjectInput
           label='อัตราส่วนที่จอดรถ'
           name='ratio_parking'
-          placeholder='เช่น 40%'
+          placeholder='เช่น 40'
+          type='number'
           formData={formData}
           handleInputChange={handleInputChange}
         />
         <ProjectInput
           label='จำนวนที่จอดรถ'
           name='num_parking'
-          placeholder='เช่น 100 คัน'
+          placeholder='เช่น 100'
+          type='number'
           formData={formData}
           handleInputChange={handleInputChange}
         />

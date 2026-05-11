@@ -16,12 +16,12 @@ import {
   Activity,
   FileText
 } from 'lucide-react'
-import api from '../../lib/axios'
+import api from '../lib/axios'
 
-import { ProjectFormData, TabType } from '../types/project'
+import type { ProjectFormData, TabType } from '../types/project'
 import { BasicInfoTab } from './ProjectFormTabs/BasicInfoTab'
 import { AddressTab } from './ProjectFormTabs/AddressTab'
-import { DeveloperTab } from './ProjectFormTabs/DeveloperTab'
+import { UnittypeTab } from './ProjectFormTabs/UnittypeTab'
 import { DetailTab } from './ProjectFormTabs/DetailTab'
 import { FacilityTab } from './ProjectFormTabs/FacilityTab'
 import { FinancialTab } from './ProjectFormTabs/FinancialTab'
@@ -35,7 +35,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
   const [activeTab, setActiveTab] = useState<TabType>('basic')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [provincesList, setProvincesList] = useState<
-    { id: string; title_th: string }[]
+    { id: string; title_th: string; title_en: string }[]
   >([])
 
   useEffect(() => {
@@ -46,7 +46,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           setProvincesList(
             res.data.data.map((item: any) => ({
               id: item.data?.id || item.id,
-              title_th: item.data?.title?.title_th || item.title_th
+              title_th: item.data?.title?.title_th || item.title_th,
+              title_en: item.data?.title?.title_en || item.title_en
             }))
           )
         }
@@ -56,7 +57,6 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
 
   useEffect(() => {
     if (projectId) {
-      // Mock data loading for Update mode
       setIsLoadingMock(true)
       setTimeout(() => {
         setFormData((prev) => ({
@@ -67,9 +67,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           property_type: 'ทาวน์โฮม',
           status: 'on-sale',
           address_th: 'ถนนจำลอง',
-          province_th: 'กรุงเทพมหานคร',
-          price_start: '2500000',
-          dev_display_name: 'บริษัท ทดสอบ จำกัด'
+          province_th: 'กรุงเทพมหานคร'
         }))
         setIsLoadingMock(false)
       }, 1000)
@@ -89,43 +87,63 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     address_en: '',
     subdistrict_th: '',
     subdistrict_en: '',
-    subdistrict_id: '',
+    subdistrict_id: 0,
     district_th: '',
     district_en: '',
-    district_id: '',
+    district_id: 0,
     province_th: '',
     province_en: '',
-    province_id: '',
+    province_id: 0,
     postcode: '',
     transport: '',
     nearby: '',
     neighbors: '',
     landzone_name: '',
-    lat: '',
-    lon: '',
+    lat: 0,
+    lon: 0,
     heading: '',
-    dev_display_name: '',
-    dev_title_th: '',
-    dev_title_en: '',
-    dev_capital: '',
-    dev_reg_num: '',
-    dev_director: '',
-    dev_address: '',
-    dev_branch: '',
-    dev_department: '',
-    dev_email: '',
-    dev_website: '',
-    dev_contact_info: '',
-    dev_business_segment: '',
-    area_rai: '',
-    area_ngan: '',
-    area_wa: '',
-    num_unit: '',
-    num_floor: '',
-    num_lift: '',
-    num_lift_service: '',
-    ratio_parking: '',
-    num_parking: '',
+    developer: {
+      image: {
+        thumbnail: '',
+        alt: '',
+        title: '',
+        url: ''
+      },
+      capital: 0,
+      website: '',
+      address: '',
+      reg_num: '',
+      director: '',
+      keyId: '',
+      business_segment: '',
+      contact_info: '',
+      display_name: '',
+      branch: '',
+      title_th: '',
+      bank_id: '',
+      location: {
+        bottom: '',
+        lon: '',
+        right: '',
+        top: '',
+        left: '',
+        lat: ''
+      },
+      title_en: '',
+      id: '',
+      department: '',
+      email: ''
+    },
+    unittype: [],
+    area_rai: 0,
+    area_ngan: 0,
+    area_wa: 0,
+    num_unit: 0,
+    num_floor: 0,
+    num_lift: 0,
+    num_lift_service: 0,
+    ratio_parking: 0,
+    num_parking: 0,
     insurance_condition: '',
     area_shared: '',
     has_pool: false,
@@ -144,22 +162,22 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     info_meeting: '',
     has_service_bus: false,
     info_other_fac: '',
-    price_start: '',
-    price_end: '',
-    price_land: '',
-    price_start_per_unit: '',
-    price_end_per_unit: '',
+    price_start: 0,
+    price_end: 0,
+    price_land: 0,
+    price_start_per_unit: 0,
+    price_end_per_unit: 0,
     price_facility: '',
     unitof_price_facility: '',
-    ratio_yield: '',
+    ratio_yield: 0,
     num_yield: '',
     insurance_cost: '',
     slogan: '',
     highlight: '',
     detail: '',
     promotion: '',
-    promotion_start: '',
-    promotion_stop: '',
+    promotion_start: 0,
+    promotion_stop: 0,
     start_price_not_found: false,
     not_show_start_price: false,
     email: '',
@@ -179,8 +197,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     { id: 'basic', label: 'ข้อมูลพื้นฐาน', icon: <User className='w-4 h-4' /> },
     { id: 'address', label: 'ที่ตั้ง', icon: <MapPin className='w-4 h-4' /> },
     {
-      id: 'developer',
-      label: 'ผู้พัฒนา',
+      id: 'unittype',
+      label: 'ประเภทยูนิต',
       icon: <Building className='w-4 h-4' />
     },
     {
@@ -216,6 +234,10 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
       setFormData((prev) => ({ ...prev, [name]: checked }))
+    } else if (type === 'number') {
+      // Keep empty string as 0 for number fields
+      const numVal = value === '' ? 0 : parseFloat(value)
+      setFormData((prev) => ({ ...prev, [name]: isNaN(numVal) ? 0 : numVal }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
@@ -250,13 +272,9 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
       }
 
       const keyId = `PRJ-${Date.now()}`
-      const timestamp = Math.floor(Date.now() / 1000)
-      const latNum = parseFloat(formData.lat) || 0
-      const lonNum = parseFloat(formData.lon) || 0
 
       // จัด Payload ให้ตรงตาม JSON ตัวอย่างแบบ 100%
       const payload = {
-        created: timestamp.toString(),
         data: {
           address: {
             subdistrict_en: formData.subdistrict_en,
@@ -265,14 +283,14 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             transport: formData.transport,
             district_en: formData.district_en,
             nearby: formData.nearby,
-            subdistrict_id: parseInt(formData.subdistrict_id) || 0,
+            subdistrict_id: formData.subdistrict_id,
             address_th: formData.address_th,
             district_th: formData.district_th,
-            province_id: parseInt(formData.province_id) || 0,
+            province_id: formData.province_id,
             neighbors: formData.neighbors,
             subdistrict_th: formData.subdistrict_th,
             address_en: formData.address_en,
-            district_id: parseInt(formData.district_id) || 0,
+            district_id: formData.district_id,
             province_th: formData.province_th,
             landzone: { name: formData.landzone_name, id: '' }
           },
@@ -283,50 +301,23 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             retarget_facebook_content_type: formData.retarget_facebook,
             retarget_price_start: formData.retarget_price
           },
-          created: timestamp,
           detail: {
             area_total: {
-              wa: parseInt(formData.area_wa) || 0,
-              ngan: parseInt(formData.area_ngan) || 0,
-              rai: parseInt(formData.area_rai) || 0
+              wa: formData.area_wa,
+              ngan: formData.area_ngan,
+              rai: formData.area_rai
             },
             num_lift_service: formData.num_lift_service,
             num_unit_type: '',
             num_lift: formData.num_lift,
-            num_unit: parseInt(formData.num_unit) || 0,
+            num_unit: formData.num_unit,
             area_shared: formData.area_shared,
-            num_floor: parseInt(formData.num_floor) || 0,
+            num_floor: formData.num_floor,
             ratio_parking: formData.ratio_parking,
             insurance_condition: formData.insurance_condition,
             num_parking: formData.num_parking
           },
-          developer: {
-            image: { thumbnail: '', alt: '', title: '', url: '' },
-            capital: parseInt(formData.dev_capital) || 0,
-            website: formData.dev_website,
-            address: formData.dev_address,
-            reg_num: formData.dev_reg_num,
-            director: formData.dev_director,
-            keyId: '',
-            business_segment: formData.dev_business_segment,
-            contact_info: formData.dev_contact_info,
-            display_name: formData.dev_display_name,
-            branch: formData.dev_branch,
-            title_th: formData.dev_title_th || formData.dev_display_name,
-            bank_id: '',
-            location: {
-              bottom: '',
-              lon: '',
-              right: '',
-              top: '',
-              left: '',
-              lat: ''
-            },
-            title_en: formData.dev_title_en,
-            id: '',
-            department: formData.dev_department,
-            email: formData.dev_email
-          },
+          developer: formData.developer,
           email: formData.email,
           facebook: formData.facebook,
           facility: {
@@ -349,7 +340,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           },
           financial: {
             price_land: formData.price_land,
-            price_start: parseFloat(formData.price_start) || 0,
+            price_start: formData.price_start,
             price_end: formData.price_end,
             price_start_per_unit: formData.price_start_per_unit,
             price_end_per_unit: formData.price_end_per_unit,
@@ -408,11 +399,11 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           location: {
             heading: formData.heading,
             bottom: '',
-            lon: lonNum,
+            lon: formData.lon,
             right: '',
             top: '',
             left: '',
-            lat: latNum
+            lat: formData.lat
           },
           meta: {
             meta_keywords: formData.meta_keywords,
@@ -442,15 +433,14 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           property_type: [
             { title_th: formData.property_type, title_en: '', id: 0 }
           ],
-          published: 1,
+          published: 0,
           selloffice: {
             contact_number: formData.selloffice_contact_number,
             address_selloffice: formData.selloffice_address
           },
           transaction: [],
           uid: 'admin_user',
-          unittype: [],
-          updated: timestamp,
+          unittype: formData.unittype,
           url: { alias_th: formData.title_th, alias_en: formData.title_en },
           video: {
             video: { thumbnail: '', title: '', url: '' },
@@ -461,15 +451,13 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           exreview: '',
           livingscore: ''
         },
-        geopoint: { coordinates: [lonNum, latNum], type: 'Point' },
-        isShouldUpdate: '0',
-        keyId: keyId,
-        updated: timestamp.toString(),
+        geopoint: { coordinates: [formData.lon, formData.lat], type: 'Point' },
+        isShouldUpdate: 0,
         deletedAt: ''
       }
 
       console.log('Sending Payload:', payload)
-      await api.post('/projectread/add', payload)
+      // await api.post('/projectread/add', payload)
       alert('บันทึกโครงการสำเร็จ!')
       navigate('/projects')
     } catch (error: any) {
@@ -489,7 +477,9 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
         <div className='fixed inset-0 bg-white/50 z-50 flex items-center justify-center backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-xl'>
             <Loader2 className='w-10 h-10 animate-spin text-blue-600' />
-            <p className='text-slate-700 font-medium'>กำลังโหลดข้อมูลจำลอง...</p>
+            <p className='text-slate-700 font-medium'>
+              กำลังโหลดข้อมูลจำลอง...
+            </p>
           </div>
         </div>
       )}
@@ -517,8 +507,10 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
       <div className='bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden'>
         <div className='p-6 sm:p-8 min-h-[500px]'>
           {activeTab === 'basic' && <BasicInfoTab {...tabProps} />}
-          {activeTab === 'address' && <AddressTab {...tabProps} provincesList={provincesList} />}
-          {activeTab === 'developer' && <DeveloperTab {...tabProps} />}
+          {activeTab === 'address' && (
+            <AddressTab {...tabProps} provincesList={provincesList} />
+          )}
+          {activeTab === 'unittype' && <UnittypeTab {...tabProps} />}
           {activeTab === 'detail' && <DetailTab {...tabProps} />}
           {activeTab === 'facility' && <FacilityTab {...tabProps} />}
           {activeTab === 'financial' && <FinancialTab {...tabProps} />}
