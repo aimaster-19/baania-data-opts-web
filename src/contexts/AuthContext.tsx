@@ -1,19 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import api from '../lib/axios'
-
-interface User {
-  id: string
-  email: string
-  [key: string]: any
-}
-
-interface AuthContextType {
-  user: User | null
-  token: string | null
-  login: (token: string, userData: User) => void
-  logout: () => Promise<void>
-  isLoading: boolean
-}
+import type { User, AuthContextType } from '../types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 

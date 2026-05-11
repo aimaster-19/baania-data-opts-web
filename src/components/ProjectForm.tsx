@@ -18,7 +18,9 @@ import {
 } from 'lucide-react'
 import api from '../lib/axios'
 
-import type { ProjectFormData, TabType } from '../types/project'
+import type { ProjectFormData, TabType } from '../types/project/form'
+import type { BaaniaDocument } from '../types/common'
+import type { Province } from '../types/province'
 import { BasicInfoTab } from './ProjectFormTabs/BasicInfoTab'
 import { AddressTab } from './ProjectFormTabs/AddressTab'
 import { UnittypeTab } from './ProjectFormTabs/UnittypeTab'
@@ -31,7 +33,7 @@ import { ImagesTab } from './ProjectFormTabs/ImagesTab'
 
 export default function ProjectForm({ projectId }: { projectId?: string }) {
   const navigate = useNavigate()
-  const [isLoadingMock, setIsLoadingMock] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('basic')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [provincesList, setProvincesList] = useState<
@@ -44,10 +46,10 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
       .then((res) => {
         if (res.data?.data) {
           setProvincesList(
-            res.data.data.map((item: any) => ({
-              id: item.data?.id || item.id,
-              title_th: item.data?.title?.title_th || item.title_th,
-              title_en: item.data?.title?.title_en || item.title_en
+            (res.data.data as BaaniaDocument<Province>[]).map((doc) => ({
+              id: String(doc.data.id),
+              title_th: doc.data.title?.title_th || '',
+              title_en: doc.data.title?.title_en || ''
             }))
           )
         }
@@ -57,20 +59,140 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
 
   useEffect(() => {
     if (projectId) {
-      setIsLoadingMock(true)
-      setTimeout(() => {
-        setFormData((prev) => ({
-          ...prev,
-          title_th: 'โครงการตัวอย่าง (Mock Data)',
-          title_en: 'Sample Project (Mock)',
-          code: 'PRJ-MOCK-001',
-          property_type: 'ทาวน์โฮม',
-          status: 'on-sale',
-          address_th: 'ถนนจำลอง',
-          province_th: 'กรุงเทพมหานคร'
-        }))
-        setIsLoadingMock(false)
-      }, 1000)
+      setIsLoadingData(true)
+      api
+        .get(`/projectread/id/${projectId}`)
+        .then((res) => {
+          // รับ data.data จาก API ตามที่ระบุ
+          const projectRead = res.data?.data || {}
+          const apiData = projectRead.data || {}
+          
+          setFormData({
+            title_th: apiData.info?.title_th || '',
+            title_en: apiData.info?.title_en || '',
+            code: apiData.info?.code || '',
+            search_keyword: apiData.info?.search_keyword || '',
+            property_type: apiData.property_type?.[0]?.title_th || '',
+            status: apiData.general?.status || 'on-sale',
+            mgnt_status: apiData.general?.mgnt_status || 'none',
+            building_amount: apiData.general?.building_amount || 'None',
+            address_th: apiData.address?.address_th || '',
+            address_en: apiData.address?.address_en || '',
+            subdistrict_th: apiData.address?.subdistrict_th || '',
+            subdistrict_en: apiData.address?.subdistrict_en || '',
+            subdistrict_id: Number(apiData.address?.subdistrict_id) || 0,
+            district_th: apiData.address?.district_th || '',
+            district_en: apiData.address?.district_en || '',
+            district_id: Number(apiData.address?.district_id) || 0,
+            province_th: apiData.address?.province_th || '',
+            province_en: apiData.address?.province_en || '',
+            province_id: Number(apiData.address?.province_id) || 0,
+            postcode: String(apiData.address?.postcode || ''),
+            transport: apiData.address?.transport || '',
+            nearby: apiData.address?.nearby || '',
+            neighbors: apiData.address?.neighbors || '',
+            landzone_name: apiData.address?.landzone?.name || '',
+            lat: Number(apiData.location?.lat) || 0,
+            lon: Number(apiData.location?.lon) || 0,
+            heading: apiData.location?.heading || '',
+            developer: {
+              id: String(apiData.developer?.id || ''),
+              keyId: apiData.developer?.keyId || '',
+              display_name: apiData.developer?.display_name || '',
+              title_th: apiData.developer?.title_th || '',
+              title_en: apiData.developer?.title_en || '',
+              image: {
+                thumbnail: apiData.developer?.image?.thumbnail || '',
+                alt: apiData.developer?.image?.alt || '',
+                title: apiData.developer?.image?.title || '',
+                url: apiData.developer?.image?.url || ''
+              },
+              capital: Number(apiData.developer?.capital) || 0,
+              website: apiData.developer?.website || '',
+              address: apiData.developer?.address || '',
+              reg_num: apiData.developer?.reg_num || '',
+              director: apiData.developer?.director || '',
+              business_segment: apiData.developer?.business_segment || '',
+              contact_info: apiData.developer?.contact_info || '',
+              branch: apiData.developer?.branch || '',
+              bank_id: apiData.developer?.bank_id || '',
+              location: {
+                bottom: apiData.developer?.location?.bottom || '',
+                lon: apiData.developer?.location?.lon || '',
+                right: apiData.developer?.location?.right || '',
+                top: apiData.developer?.location?.top || '',
+                left: apiData.developer?.location?.left || '',
+                lat: apiData.developer?.location?.lat || ''
+              },
+              department: apiData.developer?.department || '',
+              email: apiData.developer?.email || ''
+            },
+            unittype: apiData.unittype || [],
+            area_rai: apiData.detail?.area_total?.rai || 0,
+            area_ngan: apiData.detail?.area_total?.ngan || 0,
+            area_wa: apiData.detail?.area_total?.wa || 0,
+            num_unit: apiData.detail?.num_unit || 0,
+            num_floor: apiData.detail?.num_floor || 0,
+            num_lift: apiData.detail?.num_lift || 0,
+            num_lift_service: apiData.detail?.num_lift_service || 0,
+            ratio_parking: apiData.detail?.ratio_parking || 0,
+            num_parking: apiData.detail?.num_parking || 0,
+            insurance_condition: apiData.detail?.insurance_condition || '',
+            area_shared: apiData.detail?.area_shared || '',
+            has_pool: Boolean(apiData.facility?.has_pool),
+            info_pool: apiData.facility?.info_pool || '',
+            has_fitness: Boolean(apiData.facility?.has_fitness),
+            info_fitness: apiData.facility?.info_fitness || '',
+            has_park: Boolean(apiData.facility?.has_park),
+            info_park: apiData.facility?.info_park || '',
+            has_playground: Boolean(apiData.facility?.has_playground),
+            info_playground: apiData.facility?.info_playground || '',
+            has_clubhouse: Boolean(apiData.facility?.has_clubhouse),
+            info_clubhouse: apiData.facility?.info_clubhouse || '',
+            has_security: Boolean(apiData.facility?.has_security),
+            info_security: apiData.facility?.info_security || '',
+            has_meeting: Boolean(apiData.facility?.has_meeting),
+            info_meeting: apiData.facility?.info_meeting || '',
+            has_service_bus: Boolean(apiData.facility?.has_service_bus),
+            info_other_fac: apiData.facility?.info_other_fac || '',
+            price_start: apiData.financial?.price_start || 0,
+            price_end: apiData.financial?.price_end || 0,
+            price_land: apiData.financial?.price_land || 0,
+            price_start_per_unit: apiData.financial?.price_start_per_unit || 0,
+            price_end_per_unit: apiData.financial?.price_end_per_unit || 0,
+            price_facility: apiData.financial?.price_facility || '',
+            unitof_price_facility: apiData.financial?.unitof_price_facility || '',
+            ratio_yield: apiData.financial?.ratio_yield || 0,
+            num_yield: apiData.financial?.num_yield || '',
+            insurance_cost: apiData.financial?.insurance_cost || '',
+            slogan: apiData.general?.slogan || '',
+            highlight: apiData.general?.highlight || '',
+            detail: apiData.general?.detail || '',
+            promotion: apiData.general?.promotion || '',
+            promotion_start: apiData.general?.promotion_start || 0,
+            promotion_stop: apiData.general?.promotion_stop || 0,
+            start_price_not_found: Boolean(apiData.financial?.start_price_not_found),
+            not_show_start_price: Boolean(apiData.financial?.not_show_start_price),
+            email: apiData.email || '',
+            facebook: apiData.facebook || '',
+            website: apiData.website || '',
+            line: apiData.line || '',
+            selloffice_contact_number: apiData.selloffice?.contact_number || '',
+            selloffice_address: apiData.selloffice?.address_selloffice || '',
+            meta_keywords: apiData.meta?.meta_keywords || '',
+            meta_description: apiData.meta?.meta_description || '',
+            retarget_google: apiData.ads?.retarget_google_content_type || '',
+            retarget_facebook: apiData.ads?.retarget_facebook_content_type || '',
+            retarget_price: apiData.ads?.retarget_price_start || ''
+          })
+        })
+        .catch((err) => {
+          console.error('Failed to fetch project detail:', err)
+          alert('ไม่สามารถโหลดข้อมูลโครงการได้')
+        })
+        .finally(() => {
+          setIsLoadingData(false)
+        })
     }
   }, [projectId])
 
@@ -263,10 +385,10 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     setIsSubmitting(true)
     try {
       if (projectId) {
-        // Mock update API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        console.log('Mock Updating Project ID:', projectId, formData)
-        alert('อัปเดตข้อมูลโครงการสำเร็จ! (Mock)')
+        // อัปเดตข้อมูลผ่าน API
+        // await api.put(`/projectread/update/${projectId}`, payload)
+        console.log('Updating Project ID:', projectId, payload)
+        alert('อัปเดตข้อมูลโครงการสำเร็จ!')
         navigate('/projects')
         return
       }
@@ -457,7 +579,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
       }
 
       console.log('Sending Payload:', payload)
-      // await api.post('/projectread/add', payload)
+      await api.post('/projectread/add', payload)
       alert('บันทึกโครงการสำเร็จ!')
       navigate('/projects')
     } catch (error: any) {
@@ -473,12 +595,12 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
 
   return (
     <div className='max-w-6xl mx-auto py-8 px-4 pb-24'>
-      {isLoadingMock && (
+      {isLoadingData && (
         <div className='fixed inset-0 bg-white/50 z-50 flex items-center justify-center backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-xl'>
             <Loader2 className='w-10 h-10 animate-spin text-blue-600' />
             <p className='text-slate-700 font-medium'>
-              กำลังโหลดข้อมูลจำลอง...
+              กำลังโหลดข้อมูล...
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React from 'react'
-import type { IDeveloper } from './developer'
+import type { IDeveloper } from '../developer'
 
 export type TabType =
   | 'basic'

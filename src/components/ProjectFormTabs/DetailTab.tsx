@@ -1,5 +1,5 @@
 import React from 'react'
-import { type ProjectTabProps } from '../../types/project'
+import { type ProjectTabProps } from '../../types/project/form'
 import { ProjectInput } from './FormHelpers'
 
 export const DetailTab: React.FC<ProjectTabProps> = ({

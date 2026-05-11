@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { type ProjectTabProps, type UnitTypeItem } from '../../types/project'
+import { type ProjectTabProps, type UnitTypeItem } from '../../types/project/form'
 import {
   Plus,
   Trash2,

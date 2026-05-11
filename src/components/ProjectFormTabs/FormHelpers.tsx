@@ -1,5 +1,5 @@
 import React from 'react'
-import { type ProjectFormData } from '../../types/project'
+import { type ProjectFormData } from '../../types/project/form'
 
 interface FormInputProps {
   label: string

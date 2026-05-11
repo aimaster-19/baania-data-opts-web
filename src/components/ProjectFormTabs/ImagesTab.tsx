@@ -1,5 +1,5 @@
 import React from 'react'
-import { type ProjectTabProps } from '../../types/project'
+import { type ProjectTabProps } from '../../types/project/form'
 import { ImageUpload } from './ImageUpload'
 import { Image as ImageIcon, Camera, LayoutGrid } from 'lucide-react'
 

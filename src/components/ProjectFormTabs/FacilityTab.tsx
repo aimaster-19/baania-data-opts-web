@@ -1,5 +1,5 @@
 import React from 'react'
-import { type ProjectTabProps } from '../../types/project'
+import { type ProjectTabProps } from '../../types/project/form'
 import { FacilityCheck } from './FormHelpers'
 
 export const FacilityTab: React.FC<ProjectTabProps> = ({

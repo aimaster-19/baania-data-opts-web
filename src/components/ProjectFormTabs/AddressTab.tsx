@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import api from '../../lib/axios'
-import { type ProjectTabProps } from '../../types/project'
+import { type ProjectTabProps } from '../../types/project/form'
+import type { BaaniaDocument } from '../../types/common'
+import type { District } from '../../types/district'
+import type { Subdistrict } from '../../types/subdistrict'
 import { ProjectInput, ProjectTextarea } from './FormHelpers'
 
 interface AddressTabProps extends ProjectTabProps {
@@ -27,10 +30,10 @@ export const AddressTab: React.FC<AddressTabProps> = ({
         .then((res) => {
           if (res.data) {
             setDistrictsList(
-              res.data.data?.map((item: any) => ({
-                id: item.data?.id || item.id,
-                title_th: item.data?.title?.title_th || item.title_th,
-                title_en: item.data?.title?.title_en || item.title_en
+              (res.data.data as BaaniaDocument<District>[]).map((doc) => ({
+                id: String(doc.data.id),
+                title_th: doc.data.title?.title_th || '',
+                title_en: doc.data.title?.title_en || ''
               }))
             )
           }
@@ -49,10 +52,10 @@ export const AddressTab: React.FC<AddressTabProps> = ({
         .then((res) => {
           if (res.data) {
             setSubdistrictsList(
-              res.data.data?.map((item: any) => ({
-                id: item.data?.id || item.id,
-                title_th: item.data?.title?.title_th || item.title_th,
-                title_en: item.data?.title?.title_en || item.title_en
+              (res.data.data as BaaniaDocument<Subdistrict>[]).map((doc) => ({
+                id: String(doc.data.id),
+                title_th: doc.data.title?.title_th || '',
+                title_en: doc.data.title?.title_en || ''
               }))
             )
           }

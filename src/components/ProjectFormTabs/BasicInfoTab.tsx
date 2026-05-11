@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import api from '../../lib/axios'
-import { type ProjectTabProps } from '../../types/project'
+import { type ProjectTabProps } from '../../types/project/form'
 import { ProjectInput } from './FormHelpers'
 import { Building2, Loader2, Search, X, CheckCircle } from 'lucide-react'
+import type { BaaniaDocument } from '../../types/common'
 import type { IDeveloper } from '../../types/developer'
 
 const DEBOUNCE_MS = 350
@@ -43,28 +44,27 @@ function DeveloperAutocomplete({
     api
       .get('/developers', { params: { title_th: q, limit: 20 } })
       .then((res) => {
-        const data: IDeveloper[] = res.data?.data || res.data || []
+        const data: BaaniaDocument<IDeveloper>[] = res.data?.data || res.data || []
         setResults(
-          data.map((item: IDeveloper) => ({
-            id: item?.id ?? item.id ?? 0,
-            display_name: item?.display_name || item.display_name || '-',
-            title_th: item?.title_th || item.title_th || '-',
-            title_en: item?.title_en || item.title_en || '-',
-            image: item?.image || item.image || {},
-            capital: item?.capital || item.capital || 0,
-            website: item?.website || item.website || '',
-            address: item?.address || item.address || '',
-            reg_num: item?.reg_num || item.reg_num || '',
-            director: item?.director || item.director || '',
-            keyId: item?.keyId || item.keyId || '',
-            business_segment:
-              item?.business_segment || item.business_segment || '',
-            contact_info: item?.contact_info || item.contact_info || '',
-            branch: item?.branch || item.branch || '',
-            bank_id: item?.bank_id || item.bank_id || '',
-            location: item?.location || item.location || {},
-            department: item?.department || item.department || '',
-            email: item?.email || item.email || ''
+          data.map((doc: BaaniaDocument<IDeveloper>) => ({
+            id: String(doc.data?.id || ''),
+            display_name: doc.data?.display_name || '-',
+            title_th: doc.data?.title_th || '-',
+            title_en: doc.data?.title_en || '-',
+            image: doc.data?.image || { thumbnail: '', alt: '', title: '', url: '' },
+            capital: Number(doc.data?.capital || 0),
+            website: doc.data?.website || '',
+            address: doc.data?.address || '',
+            reg_num: doc.data?.reg_num || '',
+            director: doc.data?.director || '',
+            keyId: doc.data?.keyId || '',
+            business_segment: doc.data?.business_segment || '',
+            contact_info: doc.data?.contact_info || '',
+            branch: doc.data?.branch || '',
+            bank_id: doc.data?.bank_id || '',
+            location: doc.data?.location || { bottom: '', lon: '', right: '', top: '', left: '', lat: '' },
+            department: doc.data?.department || '',
+            email: doc.data?.email || ''
           }))
         )
         setOpen(true)
