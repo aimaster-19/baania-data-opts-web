@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
-  Home,
   Image as ImageIcon,
   X,
   SlidersHorizontal,
@@ -31,14 +30,6 @@ const SEARCH_DEBOUNCE_MS = 400
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-function mapStatus(raw?: string): Project['status'] {
-  if (!raw) return 'draft'
-  const l = raw.toLowerCase()
-  if (['active', 'เผยแพร่', 'publish'].includes(l)) return 'active'
-  if (['inactive', 'ปิดใช้งาน'].includes(l)) return 'inactive'
-  return 'draft'
-}
-
 function mapApiToProject(item: ProjectRead): Project {
   const d = item.data || {}
   return {
@@ -46,43 +37,81 @@ function mapApiToProject(item: ProjectRead): Project {
     code: item.keyId || d.info?.code || '-',
     name: d.info?.title_th || d.info?.title_en || '-',
     type: d.property_type?.[0]?.title_th || '-',
-    developer: d.developer?.display_name || '-',
+    saleStatus: d.general?.status || '-',
     image: d.images?.main?.thumbnail || d.images?.main?.url || '',
     province: d.address?.province_th || '-',
-    status: mapStatus(d.general?.status)
+    published:
+      typeof d.published === 'number' ? d.published : d.published ? 1 : 0
   }
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: Project['status'] }) {
-  const cfg = {
-    active: {
-      label: 'เผยแพร่',
+// สถานะการขาย — แสดงค่าจาก general.status (เช่น on-sale)
+function SaleStatusBadge({ status }: { status: string }) {
+  const cfg: Record<
+    string,
+    { label: string; bg: string; text: string; dot: string }
+  > = {
+    'on-sale': {
+      label: 'เปิดขาย',
       bg: 'bg-emerald-50',
       text: 'text-emerald-700',
       dot: 'bg-emerald-500'
     },
-    inactive: {
-      label: 'ปิดใช้งาน',
+    'sold-out': {
+      label: 'ปิดการขาย',
+      bg: 'bg-rose-50',
+      text: 'text-rose-700',
+      dot: 'bg-rose-500'
+    },
+    'coming-soon': {
+      label: 'เปิดขายเร็ว ๆ นี้',
+      bg: 'bg-blue-50',
+      text: 'text-blue-700',
+      dot: 'bg-blue-500'
+    },
+    'pre-sale': {
+      label: 'พรีเซล',
       bg: 'bg-amber-50',
       text: 'text-amber-700',
       dot: 'bg-amber-500'
-    },
-    draft: {
-      label: 'แบบร่าง',
-      bg: 'bg-slate-100',
-      text: 'text-slate-600',
-      dot: 'bg-slate-400'
     }
   }
-  const c = cfg[status as keyof typeof cfg] || cfg.draft
+  const key = status?.toLowerCase().trim()
+  const c = cfg[key] || {
+    label: status || '-',
+    bg: 'bg-slate-100',
+    text: 'text-slate-600',
+    dot: 'bg-slate-400'
+  }
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
       {c.label}
+    </span>
+  )
+}
+
+// สถานะการเผยแพร่ — published: 0 = offline, อื่น ๆ = online
+function PublishBadge({ published }: { published: number }) {
+  const isOnline = published !== 0
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+        isOnline
+          ? 'bg-emerald-50 text-emerald-700'
+          : 'bg-slate-100 text-slate-500'
+      }`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${
+          isOnline ? 'bg-emerald-500' : 'bg-slate-400'
+        }`}
+      />
+      {isOnline ? 'ออนไลน์' : 'ออฟไลน์'}
     </span>
   )
 }
@@ -368,7 +397,7 @@ export default function ListProject() {
                   ประเภท
                 </th>
                 <th className='text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4'>
-                  ผู้พัฒนา
+                  สถานะการขาย
                 </th>
                 <th className='text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4'>
                   สถานะ
@@ -435,13 +464,10 @@ export default function ListProject() {
                       </span>
                     </td>
                     <td className='px-6 py-3'>
-                      <span className='inline-flex items-center gap-1.5 text-sm text-slate-600'>
-                        <Home className='w-3.5 h-3.5 text-slate-400' />
-                        {project.developer}
-                      </span>
+                      <SaleStatusBadge status={project.saleStatus} />
                     </td>
                     <td className='px-6 py-3'>
-                      <StatusBadge status={project.status} />
+                      <PublishBadge published={project.published} />
                     </td>
                     <td className='px-6 py-3'>
                       <div className='flex items-center justify-center gap-1'>

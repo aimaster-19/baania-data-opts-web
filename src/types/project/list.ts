@@ -8,6 +8,7 @@ export interface ProjectRead {
     general?: { status?: string }
     developer?: { display_name?: string }
     address?: { province_th?: string }
+    published?: number
   }
 }
 
@@ -16,8 +17,8 @@ export interface Project {
   code: string
   name: string
   type: string
-  developer: string
+  saleStatus: string // สถานะการขาย (general.status) เช่น on-sale
   image: string
   province: string
-  status: string
+  published: number // 0 = offline, อื่น ๆ = online
 }
