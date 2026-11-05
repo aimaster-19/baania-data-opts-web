@@ -1,11 +1,17 @@
 import React from 'react'
 import { type ProjectTabProps } from '../../types/project/form'
 import { ProjectInput, ProjectTextarea } from './FormHelpers'
+import { HtmlEditor } from './HtmlEditor'
 
 export const FinancialTab: React.FC<ProjectTabProps> = ({
   formData,
-  handleInputChange
+  handleInputChange,
+  setFormData
 }) => {
+  const setHtmlField =
+    (name: 'highlight' | 'detail' | 'promotion') => (html: string) =>
+      setFormData((prev) => ({ ...prev, [name]: html }))
+
   return (
     <div className='space-y-6 animate-in fade-in'>
       <h2 className='text-lg font-bold text-slate-800 border-b pb-2'>
@@ -136,29 +142,23 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
         formData={formData}
         handleInputChange={handleInputChange}
       />
-      <ProjectTextarea
-        label='จุดเด่น (Highlight - HTML)'
-        name='highlight'
-        placeholder='เช่น <p>* อยู่ในทำเลดี...</p>'
-        rows={3}
-        formData={formData}
-        handleInputChange={handleInputChange}
+      <HtmlEditor
+        label='จุดเด่น (Highlight)'
+        value={formData.highlight}
+        onChange={setHtmlField('highlight')}
+        placeholder='เช่น อยู่ในทำเลดี ใกล้รถไฟฟ้า...'
       />
-      <ProjectTextarea
-        label='รายละเอียด (Detail - HTML)'
-        name='detail'
-        placeholder='เช่น <p>ติดต่อฝ่ายขาย...</p>'
-        rows={3}
-        formData={formData}
-        handleInputChange={handleInputChange}
+      <HtmlEditor
+        label='รายละเอียด (Detail)'
+        value={formData.detail}
+        onChange={setHtmlField('detail')}
+        placeholder='เช่น รายละเอียดโครงการ ติดต่อฝ่ายขาย...'
       />
-      <ProjectTextarea
-        label='โปรโมชั่น (Promotion - HTML)'
-        name='promotion'
-        placeholder='เช่น <p>* ส่วนลดสูงสุด...</p>'
-        rows={3}
-        formData={formData}
-        handleInputChange={handleInputChange}
+      <HtmlEditor
+        label='โปรโมชั่น (Promotion)'
+        value={formData.promotion}
+        onChange={setHtmlField('promotion')}
+        placeholder='เช่น ส่วนลดสูงสุด ฟรีค่าโอน...'
       />
       <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
         <div>

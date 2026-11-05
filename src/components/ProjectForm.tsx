@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-// import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   User,
   MapPin,
@@ -32,7 +32,7 @@ import { AdsMetaTab } from './ProjectFormTabs/AdsMetaTab'
 import { ImagesTab } from './ProjectFormTabs/ImagesTab'
 
 export default function ProjectForm({ projectId }: { projectId?: string }) {
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
   const { propertyTypes } = usePropertyTypes()
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('basic')
@@ -614,20 +614,26 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
 
       if (projectId) {
         // อัปเดตข้อมูลผ่าน API
-        // await api.put(`/projectread/update/${projectId}`, payload)
-        console.log('Updating Project ID:', projectId, payload)
+        await api.put(`/projectread/update/${projectId}`, payload)
         alert('อัปเดตข้อมูลโครงการสำเร็จ!')
-        // navigate('/projects')
+        navigate('/projects')
         return
       }
 
-      console.log('Sending Payload:', payload)
-      // await api.post('/projectread/add', payload)
+      // สร้างโครงการใหม่ผ่าน API
+      await api.post('/projectread/add', payload)
       alert('บันทึกโครงการสำเร็จ!')
-      // navigate('/projects')
+      navigate('/projects')
     } catch (error: any) {
       console.error('Save error:', error)
-      alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล')
+      // แสดง validation error จาก API (422) หากมี
+      const apiErrors = error.response?.data?.errors as
+        | { field: string; message: string }[]
+        | undefined
+      const msg = apiErrors?.length
+        ? apiErrors.map((e) => `• ${e.message}`).join('\n')
+        : error.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'
+      alert(msg)
     } finally {
       setIsSubmitting(false)
     }
