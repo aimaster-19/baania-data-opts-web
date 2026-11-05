@@ -17,6 +17,7 @@ import {
 import api from '../lib/axios'
 
 import type { ProjectFormData, TabType } from '../types/project/form'
+import { emptyProjectImages } from '../types/project/form'
 import type { BaaniaDocument } from '../types/common'
 import type { Province } from '../types/province'
 import { usePropertyTypes } from '../hooks/usePropertyTypes'
@@ -189,7 +190,44 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             retarget_google: apiData.ads?.retarget_google_content_type || '',
             retarget_facebook:
               apiData.ads?.retarget_facebook_content_type || '',
-            retarget_price: apiData.ads?.retarget_price_start || ''
+            retarget_price: apiData.ads?.retarget_price_start || '',
+            images: {
+              project: {
+                thumbnail: apiData.images?.project?.thumbnail || '',
+                title: apiData.images?.project?.title || '',
+                url: apiData.images?.project?.url || ''
+              },
+              main: {
+                thumbnail: apiData.images?.main?.thumbnail || '',
+                title: apiData.images?.main?.title || '',
+                url: apiData.images?.main?.url || '',
+                webp_main: apiData.images?.main?.webp_main || '',
+                webp_thumbnail: apiData.images?.main?.webp_thumbnail || ''
+              },
+              nearby: apiData.images?.nearby || '',
+              overall: Array.isArray(apiData.images?.overall)
+                ? apiData.images.overall.map(
+                    (o: {
+                      title?: string
+                      url?: string
+                      thumbnail?: string
+                      webp_main?: string
+                      webp_thumbnail?: string
+                    }) => ({
+                      title: o?.title || '',
+                      url: o?.url || '',
+                      thumbnail: o?.thumbnail || o?.url || '',
+                      webp_main: o?.webp_main || '',
+                      webp_thumbnail: o?.webp_thumbnail || ''
+                    })
+                  )
+                : [],
+              map: {
+                thumbnail: apiData.images?.map?.thumbnail || '',
+                title: apiData.images?.map?.title || '',
+                url: apiData.images?.map?.url || ''
+              }
+            }
           })
         })
         .catch((err) => {
@@ -318,7 +356,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     meta_description: '',
     retarget_google: '',
     retarget_facebook: '',
-    retarget_price: ''
+    retarget_price: '',
+    images: emptyProjectImages()
   })
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
@@ -492,20 +531,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             detail: formData.detail
           },
           id: keyId,
-          images: {
-            project: { thumbnail: '', title: '', url: '' },
-            main: {
-              thumbnail:
-                'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=320&h=240&fit=crop',
-              title: '',
-              url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1024&h=768&fit=crop',
-              webp_main: '',
-              webp_thumbnail: ''
-            },
-            nearby: '',
-            overall: [],
-            map: { thumbnail: '', title: '', url: '' }
-          },
+          images: formData.images,
           info: {
             search_keyword: formData.search_keyword,
             code: formData.code,

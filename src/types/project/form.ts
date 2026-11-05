@@ -115,7 +115,54 @@ export interface ProjectFormData {
   retarget_google: string
   retarget_facebook: string
   retarget_price: string
+
+  // 9. Images
+  images: ProjectImages
 }
+
+export interface ProjectSimpleImage {
+  thumbnail: string
+  title: string
+  url: string
+}
+
+export interface ProjectMainImage {
+  thumbnail: string
+  title: string
+  url: string
+  webp_main: string
+  webp_thumbnail: string
+}
+
+export interface ProjectOverallImage {
+  title: string
+  url: string
+  thumbnail: string
+  webp_main: string
+  webp_thumbnail: string
+}
+
+export interface ProjectImages {
+  project: ProjectSimpleImage
+  main: ProjectMainImage
+  nearby: string
+  overall: ProjectOverallImage[]
+  map: ProjectSimpleImage
+}
+
+export const emptyProjectImages = (): ProjectImages => ({
+  project: { thumbnail: '', title: '', url: '' },
+  main: {
+    thumbnail: '',
+    title: '',
+    url: '',
+    webp_main: '',
+    webp_thumbnail: ''
+  },
+  nearby: '',
+  overall: [],
+  map: { thumbnail: '', title: '', url: '' }
+})
 
 export interface ProjectTabProps {
   formData: ProjectFormData

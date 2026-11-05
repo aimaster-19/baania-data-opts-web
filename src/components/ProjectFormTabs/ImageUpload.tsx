@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, Image as ImageIcon, FileWarning } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 
 interface ImageUploadProps {
   label: string
@@ -23,7 +23,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     (acceptedFiles: File[]) => {
       const newPreviews = acceptedFiles.map((file) => URL.createObjectURL(file))
       setPreviews((prev) => {
-        const updated = [...prev, ...newPreviews].slice(0, maxFiles)
+        // Keep the most recent files so replacing a single image shows the
+        // new one immediately (slice from the end, not the start).
+        const updated = [...prev, ...newPreviews].slice(-maxFiles)
         return updated
       })
       onUpload(acceptedFiles)
