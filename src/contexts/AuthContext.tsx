@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import api from '../lib/axios'
+import api, {
+  setAccessToken,
+  getAccessToken,
+  refreshAccessToken,
+  setOnAuthFailure
+} from '../lib/axios'
 import type { User, AuthContextType } from '../types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -8,81 +13,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem('token')
-  )
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Register a forced-logout handler so that when the axios response
+  // interceptor exhausts its refresh attempt, the React state is cleared
+  // and ProtectedRoute redirects to /login.
   useEffect(() => {
-    const fetchUser = async () => {
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-      try {
-        const { data } = await api.get('/auth/me')
-        if (data.status === 200 && data.user) {
-          setUser(data.user)
-        }
-      } catch (error) {
-        console.error(
-          'Failed to fetch user profiles, attempting to refresh token...',
-          error
-        )
-        try {
-          const refreshRes = await api.post('/auth/refresh')
-          if (refreshRes.data.status === 200) {
-            const newToken = refreshRes.data.token
-            setToken(newToken)
-            localStorage.setItem('token', newToken)
+    setOnAuthFailure(() => {
+      setAccessToken(null)
+      setUser(null)
+      setIsAuthenticated(false)
+    })
+    return () => setOnAuthFailure(null)
+  }, [])
 
-            // Re-fetch user
-            const meRes = await api.get('/auth/me', {
-              headers: { Authorization: `Bearer ${newToken}` }
-            })
-            if (meRes.data.status === 200 && meRes.data.user) {
-              setUser(meRes.data.user)
-            }
-          } else {
-            throw new Error('Refresh failed')
-          }
-        } catch (refreshError) {
-          console.error('Refresh failed', refreshError)
-          // Token is completely invalid, logout locally
-          setToken(null)
+  // Bootstrap on load: no token is persisted, so restore the session from
+  // the httpOnly refresh cookie, then fetch the current user.
+  useEffect(() => {
+    let isMounted = true
+
+    const bootstrap = async () => {
+      try {
+        await refreshAccessToken()
+        const { data } = await api.get('/auth/me')
+        if (isMounted && data.status === 200 && data.user) {
+          setUser(data.user)
+          setIsAuthenticated(true)
+        }
+      } catch {
+        // No valid refresh cookie / session — stay logged out.
+        if (isMounted) {
+          setAccessToken(null)
           setUser(null)
-          localStorage.removeItem('token')
+          setIsAuthenticated(false)
         }
       } finally {
-        setIsLoading(false)
+        if (isMounted) setIsLoading(false)
       }
     }
 
-    fetchUser()
-  }, [token])
+    bootstrap()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const login = (newToken: string, userData: User) => {
-    setToken(newToken)
+    setAccessToken(newToken)
     setUser(userData)
-    localStorage.setItem('token', newToken)
+    setIsAuthenticated(true)
   }
 
   const logout = async () => {
     try {
-      if (token) {
+      if (getAccessToken()) {
         await api.post('/auth/logout')
       }
     } catch (e) {
       console.error('Logout request failed', e)
     } finally {
-      setToken(null)
+      setAccessToken(null)
       setUser(null)
-      localStorage.removeItem('token')
+      setIsAuthenticated(false)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, login, logout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   )
