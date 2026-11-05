@@ -3,6 +3,7 @@ import api from '../../lib/axios'
 import { type ProjectTabProps } from '../../types/project/form'
 import { ProjectInput } from './FormHelpers'
 import { Building2, Loader2, Search, X, CheckCircle } from 'lucide-react'
+import { usePropertyTypes } from '../../hooks/usePropertyTypes'
 import type { BaaniaDocument } from '../../types/common'
 import type { IDeveloper } from '../../types/developer'
 
@@ -21,7 +22,7 @@ function DeveloperAutocomplete({
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(-1)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -44,14 +45,20 @@ function DeveloperAutocomplete({
     api
       .get('/developers', { params: { title_th: q, limit: 20 } })
       .then((res) => {
-        const data: BaaniaDocument<IDeveloper>[] = res.data?.data || res.data || []
+        const data: BaaniaDocument<IDeveloper>[] =
+          res.data?.data || res.data || []
         setResults(
           data.map((doc: BaaniaDocument<IDeveloper>) => ({
             id: String(doc.data?.id || ''),
             display_name: doc.data?.display_name || '-',
             title_th: doc.data?.title_th || '-',
             title_en: doc.data?.title_en || '-',
-            image: doc.data?.image || { thumbnail: '', alt: '', title: '', url: '' },
+            image: doc.data?.image || {
+              thumbnail: '',
+              alt: '',
+              title: '',
+              url: ''
+            },
             capital: Number(doc.data?.capital || 0),
             website: doc.data?.website || '',
             address: doc.data?.address || '',
@@ -62,7 +69,14 @@ function DeveloperAutocomplete({
             contact_info: doc.data?.contact_info || '',
             branch: doc.data?.branch || '',
             bank_id: doc.data?.bank_id || '',
-            location: doc.data?.location || { bottom: '', lon: '', right: '', top: '', left: '', lat: '' },
+            location: doc.data?.location || {
+              bottom: '',
+              lon: '',
+              right: '',
+              top: '',
+              left: '',
+              lat: ''
+            },
             department: doc.data?.department || '',
             email: doc.data?.email || ''
           }))
@@ -231,6 +245,8 @@ export const BasicInfoTab: React.FC<ProjectTabProps> = ({
   handleInputChange,
   setFormData
 }) => {
+  const { propertyTypes, isLoading: isLoadingTypes } = usePropertyTypes()
+
   const handleDeveloperSelect = (dev: IDeveloper) => {
     setFormData((prev) => ({
       ...prev,
@@ -287,13 +303,17 @@ export const BasicInfoTab: React.FC<ProjectTabProps> = ({
               name='property_type'
               value={formData.property_type}
               onChange={handleInputChange}
-              className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+              disabled={isLoadingTypes}
+              className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400'
             >
-              <option value=''>เลือกประเภท</option>
-              <option value='ทาวน์โฮม'>ทาวน์โฮม (Townhome)</option>
-              <option value='บ้านเดี่ยว'>บ้านเดี่ยว (House)</option>
-              <option value='คอนโดมิเนียม'>คอนโดมิเนียม (Condo)</option>
-              <option value='ที่ดิน'>ที่ดิน (Land)</option>
+              <option value=''>
+                {isLoadingTypes ? 'กำลังโหลดประเภทโครงการ...' : 'เลือกประเภท'}
+              </option>
+              {propertyTypes.map((type) => (
+                <option key={type.id} value={type.name_th}>
+                  {type.name_th} {type.name_en ? `(${type.name_en})` : ''}
+                </option>
+              ))}
             </select>
           </div>
           <div>

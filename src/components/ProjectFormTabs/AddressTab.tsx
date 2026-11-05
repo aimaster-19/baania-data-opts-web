@@ -118,23 +118,6 @@ export const AddressTab: React.FC<AddressTabProps> = ({
             ))}
           </select>
         </div>
-        <ProjectInput
-          label='ตำบล / แขวง (EN)'
-          name='subdistrict_en'
-          placeholder='เช่น BUENG KHAM PHROI'
-          formData={formData}
-          handleInputChange={handleInputChange}
-          readOnly
-        />
-        <ProjectInput
-          label='รหัสตำบล (Subdistrict ID)'
-          name='subdistrict_id'
-          placeholder='เช่น 3642'
-          type='number'
-          formData={formData}
-          handleInputChange={handleInputChange}
-          readOnly
-        />
         <div>
           <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
             อำเภอ / เขต (TH)
@@ -167,23 +150,6 @@ export const AddressTab: React.FC<AddressTabProps> = ({
             ))}
           </select>
         </div>
-        <ProjectInput
-          label='อำเภอ / เขต (EN)'
-          name='district_en'
-          placeholder='เช่น LAM LUK KA'
-          formData={formData}
-          handleInputChange={handleInputChange}
-          readOnly
-        />
-        <ProjectInput
-          label='รหัสอำเภอ (District ID)'
-          name='district_id'
-          placeholder='เช่น 3638'
-          type='number'
-          formData={formData}
-          handleInputChange={handleInputChange}
-          readOnly
-        />
         <div>
           <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
             จังหวัด (TH)
@@ -218,22 +184,6 @@ export const AddressTab: React.FC<AddressTabProps> = ({
             ))}
           </select>
         </div>
-        <ProjectInput
-          label='จังหวัด (EN)'
-          name='province_en'
-          placeholder='เช่น Pathum Thani'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='รหัสจังหวัด (Province ID)'
-          name='province_id'
-          placeholder='เช่น 3599'
-          type='number'
-          formData={formData}
-          handleInputChange={handleInputChange}
-          readOnly
-        />
         <ProjectInput
           label='รหัสไปรษณีย์'
           name='postcode'

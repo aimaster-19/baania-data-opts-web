@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+// import { useNavigate } from 'react-router-dom'
 import {
   User,
   MapPin,
@@ -10,10 +10,8 @@ import {
   Image as ImageIcon,
   ChevronRight,
   ChevronLeft,
-  Upload,
   Loader2,
   Globe,
-  Activity,
   FileText
 } from 'lucide-react'
 import api from '../lib/axios'
@@ -21,6 +19,7 @@ import api from '../lib/axios'
 import type { ProjectFormData, TabType } from '../types/project/form'
 import type { BaaniaDocument } from '../types/common'
 import type { Province } from '../types/province'
+import { usePropertyTypes } from '../hooks/usePropertyTypes'
 import { BasicInfoTab } from './ProjectFormTabs/BasicInfoTab'
 import { AddressTab } from './ProjectFormTabs/AddressTab'
 import { UnittypeTab } from './ProjectFormTabs/UnittypeTab'
@@ -32,7 +31,8 @@ import { AdsMetaTab } from './ProjectFormTabs/AdsMetaTab'
 import { ImagesTab } from './ProjectFormTabs/ImagesTab'
 
 export default function ProjectForm({ projectId }: { projectId?: string }) {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
+  const { propertyTypes } = usePropertyTypes()
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('basic')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -66,7 +66,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           // รับ data.data จาก API ตามที่ระบุ
           const projectRead = res.data?.data || {}
           const apiData = projectRead.data || {}
-          
+
           setFormData({
             title_th: apiData.info?.title_th || '',
             title_en: apiData.info?.title_en || '',
@@ -161,7 +161,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             price_start_per_unit: apiData.financial?.price_start_per_unit || 0,
             price_end_per_unit: apiData.financial?.price_end_per_unit || 0,
             price_facility: apiData.financial?.price_facility || '',
-            unitof_price_facility: apiData.financial?.unitof_price_facility || '',
+            unitof_price_facility:
+              apiData.financial?.unitof_price_facility || '',
             ratio_yield: apiData.financial?.ratio_yield || 0,
             num_yield: apiData.financial?.num_yield || '',
             insurance_cost: apiData.financial?.insurance_cost || '',
@@ -171,8 +172,12 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             promotion: apiData.general?.promotion || '',
             promotion_start: apiData.general?.promotion_start || 0,
             promotion_stop: apiData.general?.promotion_stop || 0,
-            start_price_not_found: Boolean(apiData.financial?.start_price_not_found),
-            not_show_start_price: Boolean(apiData.financial?.not_show_start_price),
+            start_price_not_found: Boolean(
+              apiData.financial?.start_price_not_found
+            ),
+            not_show_start_price: Boolean(
+              apiData.financial?.not_show_start_price
+            ),
             email: apiData.email || '',
             facebook: apiData.facebook || '',
             website: apiData.website || '',
@@ -182,7 +187,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             meta_keywords: apiData.meta?.meta_keywords || '',
             meta_description: apiData.meta?.meta_description || '',
             retarget_google: apiData.ads?.retarget_google_content_type || '',
-            retarget_facebook: apiData.ads?.retarget_facebook_content_type || '',
+            retarget_facebook:
+              apiData.ads?.retarget_facebook_content_type || '',
             retarget_price: apiData.ads?.retarget_price_start || ''
           })
         })
@@ -384,16 +390,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
 
     setIsSubmitting(true)
     try {
-      if (projectId) {
-        // อัปเดตข้อมูลผ่าน API
-        // await api.put(`/projectread/update/${projectId}`, payload)
-        console.log('Updating Project ID:', projectId, payload)
-        alert('อัปเดตข้อมูลโครงการสำเร็จ!')
-        navigate('/projects')
-        return
-      }
-
-      const keyId = `PRJ-${Date.now()}`
+      const keyId = projectId || `PRJ-${Date.now()}`
 
       // จัด Payload ให้ตรงตาม JSON ตัวอย่างแบบ 100%
       const payload = {
@@ -552,9 +549,20 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             promote_comment: '',
             promote_start_date: 0
           },
-          property_type: [
-            { title_th: formData.property_type, title_en: '', id: 0 }
-          ],
+          property_type: (() => {
+            const selectedTypeObj = propertyTypes.find(
+              (t) => t.name_th === formData.property_type
+            )
+            return selectedTypeObj
+              ? [
+                  {
+                    title_th: selectedTypeObj.name_th,
+                    title_en: selectedTypeObj.name_en,
+                    id: Number(selectedTypeObj.id)
+                  }
+                ]
+              : [{ title_th: formData.property_type, title_en: '', id: 0 }]
+          })(),
           published: 0,
           selloffice: {
             contact_number: formData.selloffice_contact_number,
@@ -578,10 +586,19 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
         deletedAt: ''
       }
 
+      if (projectId) {
+        // อัปเดตข้อมูลผ่าน API
+        // await api.put(`/projectread/update/${projectId}`, payload)
+        console.log('Updating Project ID:', projectId, payload)
+        alert('อัปเดตข้อมูลโครงการสำเร็จ!')
+        // navigate('/projects')
+        return
+      }
+
       console.log('Sending Payload:', payload)
-      await api.post('/projectread/add', payload)
+      // await api.post('/projectread/add', payload)
       alert('บันทึกโครงการสำเร็จ!')
-      navigate('/projects')
+      // navigate('/projects')
     } catch (error: any) {
       console.error('Save error:', error)
       alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล')
@@ -599,9 +616,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
         <div className='fixed inset-0 bg-white/50 z-50 flex items-center justify-center backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-4 bg-white p-6 rounded-2xl shadow-xl'>
             <Loader2 className='w-10 h-10 animate-spin text-blue-600' />
-            <p className='text-slate-700 font-medium'>
-              กำลังโหลดข้อมูล...
-            </p>
+            <p className='text-slate-700 font-medium'>กำลังโหลดข้อมูล...</p>
           </div>
         </div>
       )}

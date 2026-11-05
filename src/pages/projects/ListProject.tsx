@@ -22,16 +22,10 @@ import api from '../../lib/axios'
 // ── Types ──────────────────────────────────────────────────────────────
 import type { PaginationMeta } from '../../types/common'
 import type { ProjectRead, Project } from '../../types/project/list'
+import { usePropertyTypes } from '../../hooks/usePropertyTypes'
 
 // ── Constants ──────────────────────────────────────────────────────────
 
-const PROJECT_TYPES = [
-  'ทั้งหมด',
-  'บ้านเดี่ยว',
-  'คอนโดมิเนียม',
-  'ทาวน์โฮม',
-  'ที่ดิน'
-]
 const ITEMS_PER_PAGE = 20
 const SEARCH_DEBOUNCE_MS = 400
 
@@ -82,7 +76,7 @@ function StatusBadge({ status }: { status: Project['status'] }) {
       dot: 'bg-slate-400'
     }
   }
-  const c = cfg[status]
+  const c = cfg[status as keyof typeof cfg] || cfg.draft
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}
@@ -97,6 +91,7 @@ function StatusBadge({ status }: { status: Project['status'] }) {
 
 export default function ListProject() {
   const navigate = useNavigate()
+  const { propertyTypes, isLoading: isLoadingTypes } = usePropertyTypes()
 
   // Server-side state
   const [projects, setProjects] = useState<Project[]>([])
@@ -119,7 +114,7 @@ export default function ListProject() {
   const [showFilters, setShowFilters] = useState(false)
 
   // ── Debounce search ──────────────────────────────────────────────────
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const handleSearchChange = (value: string) => {
     setSearchInput(value)
     clearTimeout(debounceRef.current)
@@ -322,11 +317,13 @@ export default function ListProject() {
                   setSelectedType(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
+                disabled={isLoadingTypes}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat disabled:bg-slate-100 disabled:text-slate-400"
               >
-                {PROJECT_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                <option value='ทั้งหมด'>ทั้งหมด</option>
+                {propertyTypes.map((type) => (
+                  <option key={type.id} value={type.name_th}>
+                    {type.name_th}
                   </option>
                 ))}
               </select>
