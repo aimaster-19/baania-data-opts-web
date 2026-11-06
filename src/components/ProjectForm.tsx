@@ -25,7 +25,6 @@ import { usePropertyTypes } from '../hooks/usePropertyTypes'
 import { BasicInfoTab } from './ProjectFormTabs/BasicInfoTab'
 import { AddressTab } from './ProjectFormTabs/AddressTab'
 import { UnittypeTab } from './ProjectFormTabs/UnittypeTab'
-import { DeveloperTab } from './ProjectFormTabs/DeveloperTab'
 import { DetailTab } from './ProjectFormTabs/DetailTab'
 import { FacilityTab } from './ProjectFormTabs/FacilityTab'
 import { FinancialTab } from './ProjectFormTabs/FinancialTab'
@@ -366,11 +365,6 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     { id: 'basic', label: 'ข้อมูลพื้นฐาน', icon: <User className='w-4 h-4' /> },
     { id: 'address', label: 'ที่ตั้ง', icon: <MapPin className='w-4 h-4' /> },
     {
-      id: 'developer',
-      label: 'ผู้พัฒนา',
-      icon: <Building className='w-4 h-4' />
-    },
-    {
       id: 'unittype',
       label: 'ประเภทยูนิต',
       icon: <Building className='w-4 h-4' />
@@ -680,7 +674,6 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           {activeTab === 'address' && (
             <AddressTab {...tabProps} provincesList={provincesList} />
           )}
-          {activeTab === 'developer' && <DeveloperTab {...tabProps} />}
           {activeTab === 'unittype' && <UnittypeTab {...tabProps} />}
           {activeTab === 'detail' && <DetailTab {...tabProps} />}
           {activeTab === 'facility' && <FacilityTab {...tabProps} />}
