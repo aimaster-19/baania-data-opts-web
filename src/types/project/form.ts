@@ -4,6 +4,7 @@ import type { IDeveloper } from '../developer'
 export type TabType =
   | 'basic'
   | 'address'
+  | 'developer'
   | 'unittype'
   | 'detail'
   | 'facility'

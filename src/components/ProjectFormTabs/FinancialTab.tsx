@@ -101,13 +101,10 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
             name='start_price_not_found'
             checked={!!formData.start_price_not_found}
             onChange={(e) =>
-              handleInputChange({
-                target: {
-                  name: 'start_price_not_found',
-                  value: e.target.checked as any,
-                  type: 'checkbox'
-                }
-              } as any)
+              setFormData((prev) => ({
+                ...prev,
+                start_price_not_found: e.target.checked
+              }))
             }
           />{' '}
           ไม่พบราคาเริ่มต้น
@@ -118,13 +115,10 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
             name='not_show_start_price'
             checked={!!formData.not_show_start_price}
             onChange={(e) =>
-              handleInputChange({
-                target: {
-                  name: 'not_show_start_price',
-                  value: e.target.checked as any,
-                  type: 'checkbox'
-                }
-              } as any)
+              setFormData((prev) => ({
+                ...prev,
+                not_show_start_price: e.target.checked
+              }))
             }
           />{' '}
           ไม่แสดงราคาเริ่มต้น

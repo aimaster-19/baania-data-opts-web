@@ -17,6 +17,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import api from '../../lib/axios'
+import { getApiErrorMessage } from '../../lib/errors'
 
 // ── Types ──────────────────────────────────────────────────────────────
 import type { PaginationMeta } from '../../types/common'
@@ -179,11 +180,9 @@ export default function ListProject() {
           hasPrevPage: false
         }
       )
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch projects:', err)
-      setError(
-        err?.response?.data?.message || err.message || 'ไม่สามารถโหลดข้อมูลได้'
-      )
+      setError(getApiErrorMessage(err, 'ไม่สามารถโหลดข้อมูลได้'))
     } finally {
       setIsLoading(false)
     }
@@ -209,8 +208,8 @@ export default function ListProject() {
     try {
       await api.delete(`/projectread/delete/${id}`)
       fetchProjects() // re-fetch to stay in sync with server
-    } catch (err: any) {
-      alert(err?.response?.data?.message || 'ลบไม่สำเร็จ')
+    } catch (err) {
+      alert(getApiErrorMessage(err, 'ลบไม่สำเร็จ'))
     }
   }
 

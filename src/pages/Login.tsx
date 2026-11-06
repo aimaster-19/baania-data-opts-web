@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Lock, Mail, ArrowRight } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../lib/axios'
+import { getApiErrorMessage } from '../lib/errors'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -32,12 +33,8 @@ export default function Login() {
       } else {
         setError(response.data.message || 'Login failed.')
       }
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          'An error occurred during login.'
-      )
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'An error occurred during login.'))
     } finally {
       setIsLoading(false)
     }

@@ -15,6 +15,7 @@ import {
   FileText
 } from 'lucide-react'
 import api from '../lib/axios'
+import { getApiErrorMessage } from '../lib/errors'
 
 import type { ProjectFormData, TabType } from '../types/project/form'
 import { emptyProjectImages } from '../types/project/form'
@@ -24,6 +25,7 @@ import { usePropertyTypes } from '../hooks/usePropertyTypes'
 import { BasicInfoTab } from './ProjectFormTabs/BasicInfoTab'
 import { AddressTab } from './ProjectFormTabs/AddressTab'
 import { UnittypeTab } from './ProjectFormTabs/UnittypeTab'
+import { DeveloperTab } from './ProjectFormTabs/DeveloperTab'
 import { DetailTab } from './ProjectFormTabs/DetailTab'
 import { FacilityTab } from './ProjectFormTabs/FacilityTab'
 import { FinancialTab } from './ProjectFormTabs/FinancialTab'
@@ -364,6 +366,11 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     { id: 'basic', label: 'ข้อมูลพื้นฐาน', icon: <User className='w-4 h-4' /> },
     { id: 'address', label: 'ที่ตั้ง', icon: <MapPin className='w-4 h-4' /> },
     {
+      id: 'developer',
+      label: 'ผู้พัฒนา',
+      icon: <Building className='w-4 h-4' />
+    },
+    {
       id: 'unittype',
       label: 'ประเภทยูนิต',
       icon: <Building className='w-4 h-4' />
@@ -624,16 +631,10 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
       await api.post('/projectread/add', payload)
       alert('บันทึกโครงการสำเร็จ!')
       navigate('/projects')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Save error:', error)
       // แสดง validation error จาก API (422) หากมี
-      const apiErrors = error.response?.data?.errors as
-        | { field: string; message: string }[]
-        | undefined
-      const msg = apiErrors?.length
-        ? apiErrors.map((e) => `• ${e.message}`).join('\n')
-        : error.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'
-      alert(msg)
+      alert(getApiErrorMessage(error, 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'))
     } finally {
       setIsSubmitting(false)
     }
@@ -679,6 +680,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           {activeTab === 'address' && (
             <AddressTab {...tabProps} provincesList={provincesList} />
           )}
+          {activeTab === 'developer' && <DeveloperTab {...tabProps} />}
           {activeTab === 'unittype' && <UnittypeTab {...tabProps} />}
           {activeTab === 'detail' && <DetailTab {...tabProps} />}
           {activeTab === 'facility' && <FacilityTab {...tabProps} />}

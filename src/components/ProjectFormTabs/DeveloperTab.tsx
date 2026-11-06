@@ -1,109 +1,108 @@
 import React from 'react'
 import { type ProjectTabProps } from '../../types/project/form'
-import { ProjectInput, ProjectTextarea } from './FormHelpers'
+import type { IDeveloper } from '../../types/developer'
+
+const inputClass =
+  'w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-sm bg-white'
 
 export const DeveloperTab: React.FC<ProjectTabProps> = ({
   formData,
-  handleInputChange
+  setFormData
 }) => {
+  const dev = formData.developer
+
+  const setDev = (field: keyof IDeveloper, value: string | number) =>
+    setFormData((prev) => ({
+      ...prev,
+      developer: { ...prev.developer, [field]: value }
+    }))
+
+  const renderField = (
+    label: string,
+    field: keyof IDeveloper,
+    placeholder = '',
+    type: 'text' | 'number' = 'text'
+  ) => (
+    <div>
+      <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={
+          type === 'number'
+            ? (dev[field] as number) || ''
+            : (dev[field] as string) || ''
+        }
+        onChange={(e) =>
+          setDev(
+            field,
+            type === 'number'
+              ? e.target.value === ''
+                ? 0
+                : Number(e.target.value)
+              : e.target.value
+          )
+        }
+        placeholder={placeholder}
+        className={inputClass}
+      />
+    </div>
+  )
+
+  const renderArea = (
+    label: string,
+    field: keyof IDeveloper,
+    placeholder = '',
+    rows = 2
+  ) => (
+    <div>
+      <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+        {label}
+      </label>
+      <textarea
+        value={(dev[field] as string) || ''}
+        onChange={(e) => setDev(field, e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        className={inputClass + ' resize-y'}
+      />
+    </div>
+  )
+
   return (
     <div className='space-y-6 animate-in fade-in'>
       <h2 className='text-lg font-bold text-slate-800 border-b pb-2'>
         ข้อมูลบริษัทผู้พัฒนาโครงการ
       </h2>
       <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-        <ProjectInput
-          label='ชื่อที่แสดง (Display Name)'
-          name='dev_display_name'
-          placeholder='เช่น บริษัท บริทาเนีย จำกัด'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='ชื่อทางการ (TH)'
-          name='dev_title_th'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='ชื่อทางการ (EN)'
-          name='dev_title_en'
-          placeholder='เช่น BRITANIA CO., LTD.'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='ทุนจดทะเบียน (Capital)'
-          name='dev_capital'
-          placeholder='เช่น 300000000'
-          type='number'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='เลขทะเบียนนิติบุคคล'
-          name='dev_reg_num'
-          placeholder='เช่น 0115559016801'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='แผนก (Department)'
-          name='dev_department'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='สาขา (Branch)'
-          name='dev_branch'
-          placeholder='เช่น เปลี่ยนแปลงชื่อบริษัทเดิม...'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='อีเมลผู้พัฒนา'
-          name='dev_email'
-          placeholder='email@dev.com'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='เว็บไซต์ผู้พัฒนา'
-          name='dev_website'
-          placeholder='https://...'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='เซกเมนต์ธุรกิจ'
-          name='dev_business_segment'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
+        {renderField(
+          'ชื่อที่แสดง (Display Name)',
+          'display_name',
+          'เช่น บริษัท บริทาเนีย จำกัด'
+        )}
+        {renderField('ชื่อทางการ (TH)', 'title_th')}
+        {renderField('ชื่อทางการ (EN)', 'title_en', 'เช่น BRITANIA CO., LTD.')}
+        {renderField(
+          'ทุนจดทะเบียน (Capital)',
+          'capital',
+          'เช่น 300000000',
+          'number'
+        )}
+        {renderField('เลขทะเบียนนิติบุคคล', 'reg_num', 'เช่น 0115559016801')}
+        {renderField('แผนก (Department)', 'department')}
+        {renderField('สาขา (Branch)', 'branch', 'เช่น สำนักงานใหญ่')}
+        {renderField('อีเมลผู้พัฒนา', 'email', 'email@dev.com')}
+        {renderField('เว็บไซต์ผู้พัฒนา', 'website', 'https://...')}
+        {renderField('เซกเมนต์ธุรกิจ', 'business_segment')}
       </div>
-      <ProjectTextarea
-        label='รายนามกรรมการบริษัท (Director)'
-        name='dev_director'
-        placeholder='ชื่อ-นามสกุล'
-        rows={2}
-        formData={formData}
-        handleInputChange={handleInputChange}
-      />
-      <ProjectTextarea
-        label='ที่อยู่บริษัท'
-        name='dev_address'
-        placeholder='รายละเอียดที่ตั้งสำนักงานใหญ่...'
-        rows={2}
-        formData={formData}
-        handleInputChange={handleInputChange}
-      />
-      <ProjectTextarea
-        label='ข้อมูลติดต่ออื่นๆ (Contact Info)'
-        name='dev_contact_info'
-        rows={2}
-        formData={formData}
-        handleInputChange={handleInputChange}
-      />
+      {renderArea('รายนามกรรมการบริษัท (Director)', 'director', 'ชื่อ-นามสกุล')}
+      {renderArea(
+        'ที่อยู่บริษัท',
+        'address',
+        'รายละเอียดที่ตั้งสำนักงานใหญ่...'
+      )}
+      {renderArea('ข้อมูลติดต่ออื่นๆ (Contact Info)', 'contact_info')}
     </div>
   )
 }

@@ -89,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook co-located with provider; only affects Fast Refresh (dev), not the build
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {

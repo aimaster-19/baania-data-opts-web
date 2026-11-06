@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../lib/axios'
 import type { BaaniaDocument } from '../types/common'
 import type { IPropertyType } from '../types/propertyType'
+import { getApiErrorMessage } from '../lib/errors'
 
 // Simple in-memory cache to prevent multiple API calls across components
 let cachedPropertyTypes: IPropertyType[] | null = null
@@ -15,11 +16,9 @@ export function usePropertyTypes() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (cachedPropertyTypes) {
-      setPropertyTypes(cachedPropertyTypes)
-      setIsLoading(false)
-      return
-    }
+    // When the cache is already populated, the lazy initial state above has
+    // the data and isLoading is false — nothing to do.
+    if (cachedPropertyTypes) return
 
     if (!fetchPromise) {
       fetchPromise = api
@@ -48,14 +47,10 @@ export function usePropertyTypes() {
           setIsLoading(false)
         }
       })
-      .catch((err: any) => {
+      .catch((err) => {
         if (isMounted) {
           console.error('Failed to fetch property types:', err)
-          setError(
-            err?.response?.data?.message ||
-              err.message ||
-              'Failed to fetch property types'
-          )
+          setError(getApiErrorMessage(err, 'Failed to fetch property types'))
           setIsLoading(false)
         }
       })
