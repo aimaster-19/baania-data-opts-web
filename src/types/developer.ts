@@ -30,3 +30,10 @@ export interface IDeveloper {
   department: string
   email: string
 }
+
+// เอกสารผู้พัฒนาจาก API (GET /developers)
+export interface DeveloperDoc {
+  _id: string
+  keyId?: string
+  data: Partial<IDeveloper> & { title?: string; [key: string]: unknown }
+}

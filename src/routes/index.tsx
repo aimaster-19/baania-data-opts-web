@@ -7,6 +7,7 @@ import Profile from '../pages/Profile'
 import CreateProject from '../pages/projects/CreateProject'
 import ListProject from '../pages/projects/ListProject'
 import UpdateProject from '../pages/projects/UpdateProject'
+import ListDeveloper from '../pages/developers/ListDeveloper'
 
 export default function AppRoutes() {
   return (
@@ -22,6 +23,7 @@ export default function AppRoutes() {
           <Route path='/profile' element={<Profile />} />
           <Route path='/' element={<Navigate to='/profile' replace />} />
           <Route path='/projects' element={<ListProject />} />
+          <Route path='/developers' element={<ListDeveloper />} />
           <Route path='/create-project' element={<CreateProject />} />
           <Route path='/edit-project/:id' element={<UpdateProject />} />
         </Route>

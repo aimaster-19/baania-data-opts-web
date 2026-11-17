@@ -4,7 +4,8 @@ import {
   Users,
   Settings,
   Database,
-  Building2
+  Building2,
+  Building
 } from 'lucide-react'
 
 export default function Sidebar() {
@@ -13,6 +14,7 @@ export default function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/profile', icon: LayoutDashboard },
     { name: 'โครงการ', href: '/projects', icon: Building2 },
+    { name: 'ผู้พัฒนาโครงการ', href: '/developers', icon: Building },
     { name: 'Users', href: '#', icon: Users },
     { name: 'Data Management', href: '#', icon: Database },
     { name: 'Settings', href: '#', icon: Settings }
