@@ -23,6 +23,8 @@ export interface ProjectFormData {
   mgnt_status: string
   building_amount: string
   building_description: string
+  date_construction: string
+  date_finish: string
 
   // 2. Address & Location
   address_th: string
@@ -80,6 +82,8 @@ export interface ProjectFormData {
   has_meeting: boolean
   info_meeting: string
   has_service_bus: boolean
+  info_service_bus: string
+  has_other: boolean
   info_other_fac: string
 
   // 6. Financial & Promotions

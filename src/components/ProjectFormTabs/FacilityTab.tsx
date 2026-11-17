@@ -64,6 +64,13 @@ export const FacilityTab: React.FC<ProjectTabProps> = ({
         <FacilityCheck
           label='รถรับส่ง (Shuttle Bus)'
           checkName='has_service_bus'
+          infoName='info_service_bus'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <FacilityCheck
+          label='อื่นๆ (Other)'
+          checkName='has_other'
           infoName='info_other_fac'
           formData={formData}
           handleInputChange={handleInputChange}

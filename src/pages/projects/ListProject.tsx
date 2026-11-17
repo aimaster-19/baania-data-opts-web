@@ -162,6 +162,7 @@ export default function ListProject() {
   const [searchInput, setSearchInput] = useState('') // what user types (instant)
   const [searchQuery, setSearchQuery] = useState('') // debounced value sent to API
   const [selectedType, setSelectedType] = useState('ทั้งหมด')
+  const [selectedStatus, setSelectedStatus] = useState('ทั้งหมด') // ทั้งหมด | ออนไลน์ | ออฟไลน์ | ลบ
   const [currentPage, setCurrentPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
 
@@ -187,6 +188,9 @@ export default function ListProject() {
       }
       if (searchQuery.trim()) params.search = searchQuery.trim()
       if (selectedType !== 'ทั้งหมด') params.propertyType = selectedType
+      if (selectedStatus === 'ออนไลน์') params.publishStatus = 'online'
+      else if (selectedStatus === 'ออฟไลน์') params.publishStatus = 'offline'
+      else if (selectedStatus === 'ลบ') params.deleted = 'true'
 
       const { data: res } = await api.get('/projectread/list', { params })
 
@@ -208,7 +212,7 @@ export default function ListProject() {
     } finally {
       setIsLoading(false)
     }
-  }, [currentPage, searchQuery, selectedType])
+  }, [currentPage, searchQuery, selectedType, selectedStatus])
 
   // Re-fetch whenever query params change
   useEffect(() => {
@@ -216,10 +220,13 @@ export default function ListProject() {
   }, [fetchProjects])
 
   // ── Derived ──────────────────────────────────────────────────────────
-  const activeFilterCount = selectedType !== 'ทั้งหมด' ? 1 : 0
+  const activeFilterCount =
+    (selectedType !== 'ทั้งหมด' ? 1 : 0) +
+    (selectedStatus !== 'ทั้งหมด' ? 1 : 0)
 
   const clearFilters = () => {
     setSelectedType('ทั้งหมด')
+    setSelectedStatus('ทั้งหมด')
     setSearchInput('')
     setSearchQuery('')
     setCurrentPage(1)
@@ -344,7 +351,7 @@ export default function ListProject() {
             <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400' />
             <input
               type='text'
-              placeholder='ค้นหาชื่อโครงการ, รหัส, ผู้พัฒนา...'
+              placeholder='ค้นหา KeyID, ชื่อโครงการ, รหัส, ผู้พัฒนา...'
               value={searchInput}
               onChange={(e) => handleSearchChange(e.target.value)}
               className='w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm placeholder:text-slate-400'
@@ -400,6 +407,25 @@ export default function ListProject() {
                     {type.name_th}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div className='flex-1'>
+              <label className='block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5'>
+                <Filter className='w-3 h-3 inline mr-1' />
+                สถานะ
+              </label>
+              <select
+                value={selectedStatus}
+                onChange={(e) => {
+                  setSelectedStatus(e.target.value)
+                  setCurrentPage(1)
+                }}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
+              >
+                <option value='ทั้งหมด'>ทั้งหมด</option>
+                <option value='ออนไลน์'>ออนไลน์</option>
+                <option value='ออฟไลน์'>ออฟไลน์</option>
+                <option value='ลบ'>ลบ</option>
               </select>
             </div>
             {activeFilterCount > 0 && (
