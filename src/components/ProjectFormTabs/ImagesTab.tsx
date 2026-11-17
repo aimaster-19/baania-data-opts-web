@@ -1,7 +1,13 @@
 import React, { useState } from 'react'
 import { type ProjectTabProps } from '../../types/project/form'
 import { ImageUpload } from './ImageUpload'
-import { Image as ImageIcon, Camera, LayoutGrid } from 'lucide-react'
+import {
+  Image as ImageIcon,
+  Camera,
+  LayoutGrid,
+  Map,
+  MapPin
+} from 'lucide-react'
 import api from '../../lib/axios'
 
 export const ImagesTab: React.FC<ProjectTabProps> = ({
@@ -100,10 +106,47 @@ export const ImagesTab: React.FC<ProjectTabProps> = ({
     }))
   }
 
+  // ภาพเดี่ยว: แปลน (project) / แผนที่ (map)
+  const handleSimpleUpload =
+    (field: 'project' | 'map') => async (files: File[]) => {
+      if (files.length === 0) return
+      setIsUploading(true)
+      try {
+        const [url] = await uploadToServer(files)
+        if (!url) return
+        setFormData((prev) => ({
+          ...prev,
+          images: {
+            ...prev.images,
+            [field]: { ...prev.images[field], url, thumbnail: url }
+          }
+        }))
+      } catch (err) {
+        console.error(`Upload ${field} image failed:`, err)
+        alert('อัปโหลดรูปภาพไม่สำเร็จ')
+      } finally {
+        setIsUploading(false)
+      }
+    }
+
+  const handleSimpleRemove = (field: 'project' | 'map') => () => {
+    setFormData((prev) => ({
+      ...prev,
+      images: {
+        ...prev.images,
+        [field]: { ...prev.images[field], url: '', thumbnail: '' }
+      }
+    }))
+  }
+
   // Existing images (shown when editing). Keys force ImageUpload to re-seed
   // its previews once the project data finishes loading.
   const mainInitial = formData.images.main.url ? [formData.images.main.url] : []
   const galleryInitial = formData.images.overall.map((o) => o.url)
+  const planInitial = formData.images.project.url
+    ? [formData.images.project.url]
+    : []
+  const mapInitial = formData.images.map.url ? [formData.images.map.url] : []
 
   return (
     <div className='space-y-10 animate-in fade-in duration-500'>
@@ -169,6 +212,42 @@ export const ImagesTab: React.FC<ProjectTabProps> = ({
             💡 ข้อแนะนำ: คุณสามารถเลือกรูปภาพพร้อมกันได้หลายรูป (รองรับสูงสุด 10
             รูป)
           </p>
+        </div>
+
+        {/* Plan Image Section (project) */}
+        <div className='space-y-4'>
+          <div className='flex items-center gap-2 text-slate-700'>
+            <Map className='w-4 h-4' />
+            <span className='font-bold text-sm uppercase tracking-wider'>
+              ภาพแปลน (Plan)
+            </span>
+          </div>
+          <ImageUpload
+            key={`plan-${formData.images.project.url}`}
+            label='ภาพผังโครงการ / แปลนยูนิต'
+            onUpload={handleSimpleUpload('project')}
+            onRemove={handleSimpleRemove('project')}
+            maxFiles={1}
+            initialImages={planInitial}
+          />
+        </div>
+
+        {/* Map Image Section (map) */}
+        <div className='space-y-4'>
+          <div className='flex items-center gap-2 text-slate-700'>
+            <MapPin className='w-4 h-4' />
+            <span className='font-bold text-sm uppercase tracking-wider'>
+              ภาพแผนที่ (Map)
+            </span>
+          </div>
+          <ImageUpload
+            key={`map-${formData.images.map.url}`}
+            label='ภาพแผนที่ที่ตั้งโครงการ'
+            onUpload={handleSimpleUpload('map')}
+            onRemove={handleSimpleRemove('map')}
+            maxFiles={1}
+            initialImages={mapInitial}
+          />
         </div>
       </div>
     </div>

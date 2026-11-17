@@ -78,6 +78,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             status: apiData.general?.status || 'on-sale',
             mgnt_status: apiData.general?.mgnt_status || 'none',
             building_amount: apiData.general?.building_amount || 'None',
+            building_description: apiData.general?.building_description || '',
             address_th: apiData.address?.address_th || '',
             address_en: apiData.address?.address_en || '',
             subdistrict_th: apiData.address?.subdistrict_th || '',
@@ -172,6 +173,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             highlight: apiData.general?.highlight || '',
             detail: apiData.general?.detail || '',
             promotion: apiData.general?.promotion || '',
+            info_rationeccomend: apiData.general?.info_rationeccomend || '',
             promotion_start: apiData.general?.promotion_start || 0,
             promotion_stop: apiData.general?.promotion_stop || 0,
             start_price_not_found: Boolean(
@@ -250,6 +252,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     status: 'on-sale',
     mgnt_status: 'none',
     building_amount: 'None',
+    building_description: '',
     address_th: '',
     address_en: '',
     subdistrict_th: '',
@@ -343,6 +346,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     highlight: '',
     detail: '',
     promotion: '',
+    info_rationeccomend: '',
     promotion_start: 0,
     promotion_stop: 0,
     start_price_not_found: false,
@@ -381,7 +385,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     },
     {
       id: 'financial',
-      label: 'การเงิน & โปรโมชั่น',
+      label: 'การเงิน',
       icon: <Tag className='w-4 h-4' />
     },
     { id: 'contact', label: 'ติดต่อ', icon: <Phone className='w-4 h-4' /> },
@@ -432,6 +436,25 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     try {
       const keyId = projectId || `PRJ-${Date.now()}`
 
+      // ค่าเริ่มต้นอัตโนมัติเมื่อไม่ได้กรอก
+      const SALES_FALLBACK = '* ติดต่อฝ่ายขายโครงการ'
+      const isHtmlEmpty = (html: string) =>
+        !html ||
+        html
+          .replace(/<[^>]*>/g, '')
+          .replace(/&nbsp;/g, '')
+          .trim() === ''
+      const promotion = isHtmlEmpty(formData.promotion)
+        ? SALES_FALLBACK
+        : formData.promotion
+      const highlight = isHtmlEmpty(formData.highlight)
+        ? SALES_FALLBACK
+        : formData.highlight
+      const detailText = isHtmlEmpty(formData.detail)
+        ? SALES_FALLBACK
+        : formData.detail
+      const email = formData.email.trim() || 'contact@baania.com'
+
       // จัด Payload ให้ตรงตาม JSON ตัวอย่างแบบ 100%
       const payload = {
         data: {
@@ -477,7 +500,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             num_parking: formData.num_parking
           },
           developer: formData.developer,
-          email: formData.email,
+          email: email,
           facebook: formData.facebook,
           facility: {
             has_pool: formData.has_pool ? 1 : 0,
@@ -522,14 +545,16 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           },
           general: {
             building_amount: formData.building_amount,
-            highlight: formData.highlight,
+            building_description: formData.building_description,
+            highlight: highlight,
             mgnt_status: formData.mgnt_status,
-            promotion: formData.promotion,
+            promotion: promotion,
+            info_rationeccomend: formData.info_rationeccomend,
             promotion_start: formData.promotion_start,
             promotion_stop: formData.promotion_stop,
             slogan: formData.slogan,
             status: formData.status,
-            detail: formData.detail
+            detail: detailText
           },
           id: keyId,
           images: formData.images,

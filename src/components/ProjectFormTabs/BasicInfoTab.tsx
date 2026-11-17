@@ -346,13 +346,6 @@ export const BasicInfoTab: React.FC<ProjectTabProps> = ({
               <option value='completed'>สร้างเสร็จพร้อมอยู่</option>
             </select>
           </div>
-          <ProjectInput
-            label='จำนวนอาคาร (Building Amount)'
-            name='building_amount'
-            placeholder='เช่น None หรือ 3 อาคาร'
-            formData={formData}
-            handleInputChange={handleInputChange}
-          />
         </div>
       </div>
 

@@ -22,6 +22,7 @@ export interface ProjectFormData {
   status: string
   mgnt_status: string
   building_amount: string
+  building_description: string
 
   // 2. Address & Location
   address_th: string
@@ -96,6 +97,7 @@ export interface ProjectFormData {
   highlight: string
   detail: string
   promotion: string
+  info_rationeccomend: string
   promotion_start: number
   promotion_stop: number
   start_price_not_found: boolean

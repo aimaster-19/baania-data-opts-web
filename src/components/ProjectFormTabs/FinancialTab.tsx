@@ -1,22 +1,48 @@
 import React from 'react'
 import { type ProjectTabProps } from '../../types/project/form'
-import { ProjectInput, ProjectTextarea } from './FormHelpers'
-import { HtmlEditor } from './HtmlEditor'
+import { ProjectInput } from './FormHelpers'
 
 export const FinancialTab: React.FC<ProjectTabProps> = ({
   formData,
   handleInputChange,
   setFormData
 }) => {
-  const setHtmlField =
-    (name: 'highlight' | 'detail' | 'promotion') => (html: string) =>
-      setFormData((prev) => ({ ...prev, [name]: html }))
-
   return (
     <div className='space-y-6 animate-in fade-in'>
       <h2 className='text-lg font-bold text-slate-800 border-b pb-2'>
         ราคาและการเงิน
       </h2>
+
+      {/* ── checkbox ขึ้นก่อน ── */}
+      <div className='flex flex-wrap gap-6'>
+        <label className='flex items-center gap-2 cursor-pointer text-sm text-slate-600'>
+          <input
+            type='checkbox'
+            checked={!!formData.start_price_not_found}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                start_price_not_found: e.target.checked
+              }))
+            }
+          />
+          ไม่พบราคาเริ่มต้น
+        </label>
+        <label className='flex items-center gap-2 cursor-pointer text-sm text-slate-600'>
+          <input
+            type='checkbox'
+            checked={!!formData.not_show_start_price}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                not_show_start_price: e.target.checked
+              }))
+            }
+          />
+          ไม่แสดงราคาเริ่มต้น
+        </label>
+      </div>
+
       <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
         <ProjectInput
           label='ราคาเริ่มต้น (บาท)'
@@ -43,7 +69,7 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
           handleInputChange={handleInputChange}
         />
         <ProjectInput
-          label='ราคาเริ่มต้น/ยูนิต'
+          label='ราคาเริ่มต้นเฉลี่ย/ยูนิต'
           name='price_start_per_unit'
           placeholder='เช่น 50000'
           type='number'
@@ -51,27 +77,30 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
           handleInputChange={handleInputChange}
         />
         <ProjectInput
-          label='ราคาสูงสุด/ยูนิต'
+          label='ราคาสูงสุดเฉลี่ย/ยูนิต'
           name='price_end_per_unit'
           placeholder='เช่น 80000'
           type='number'
           formData={formData}
           handleInputChange={handleInputChange}
         />
-        <ProjectInput
-          label='ค่าส่วนกลาง'
-          name='price_facility'
-          placeholder='เช่น 35'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='หน่วยค่าส่วนกลาง'
-          name='unitof_price_facility'
-          placeholder='เช่น b-meter (บาท/ตร.ม.)'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
+        {/* ค่าส่วนกลาง + หน่วย อยู่บรรทัดเดียวกัน */}
+        <div className='grid grid-cols-2 gap-3'>
+          <ProjectInput
+            label='ค่าส่วนกลาง'
+            name='price_facility'
+            placeholder='เช่น 35'
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
+          <ProjectInput
+            label='หน่วยค่าส่วนกลาง'
+            name='unitof_price_facility'
+            placeholder='เช่น บาท/ตร.ม.'
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
+        </div>
         <ProjectInput
           label='อัตราผลตอบแทน (Yield %)'
           name='ratio_yield'
@@ -93,94 +122,6 @@ export const FinancialTab: React.FC<ProjectTabProps> = ({
           formData={formData}
           handleInputChange={handleInputChange}
         />
-      </div>
-      <div className='flex gap-4 mb-4'>
-        <label className='flex items-center gap-2 cursor-pointer'>
-          <input
-            type='checkbox'
-            name='start_price_not_found'
-            checked={!!formData.start_price_not_found}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                start_price_not_found: e.target.checked
-              }))
-            }
-          />{' '}
-          ไม่พบราคาเริ่มต้น
-        </label>
-        <label className='flex items-center gap-2 cursor-pointer'>
-          <input
-            type='checkbox'
-            name='not_show_start_price'
-            checked={!!formData.not_show_start_price}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                not_show_start_price: e.target.checked
-              }))
-            }
-          />{' '}
-          ไม่แสดงราคาเริ่มต้น
-        </label>
-      </div>
-
-      <h2 className='text-lg font-bold text-slate-800 border-b pb-2 mt-6'>
-        การโปรโมทและจุดเด่น
-      </h2>
-      <ProjectTextarea
-        label='สโลแกน (Slogan)'
-        name='slogan'
-        placeholder='เช่น พรีเมียมทาวน์โฮมสไตล์อังกฤษ...'
-        rows={2}
-        formData={formData}
-        handleInputChange={handleInputChange}
-      />
-      <HtmlEditor
-        label='จุดเด่น (Highlight)'
-        value={formData.highlight}
-        onChange={setHtmlField('highlight')}
-        placeholder='เช่น อยู่ในทำเลดี ใกล้รถไฟฟ้า...'
-      />
-      <HtmlEditor
-        label='รายละเอียด (Detail)'
-        value={formData.detail}
-        onChange={setHtmlField('detail')}
-        placeholder='เช่น รายละเอียดโครงการ ติดต่อฝ่ายขาย...'
-      />
-      <HtmlEditor
-        label='โปรโมชั่น (Promotion)'
-        value={formData.promotion}
-        onChange={setHtmlField('promotion')}
-        placeholder='เช่น ส่วนลดสูงสุด ฟรีค่าโอน...'
-      />
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-        <div>
-          <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
-            วันเริ่มโปรโมชั่น (Unix Timestamp)
-          </label>
-          <input
-            type='number'
-            name='promotion_start'
-            value={formData.promotion_start || ''}
-            onChange={handleInputChange}
-            placeholder='เช่น 1735308000'
-            className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-          />
-        </div>
-        <div>
-          <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
-            วันสิ้นสุดโปรโมชั่น (Unix Timestamp)
-          </label>
-          <input
-            type='number'
-            name='promotion_stop'
-            value={formData.promotion_stop || ''}
-            onChange={handleInputChange}
-            placeholder='เช่น 1743343200'
-            className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-          />
-        </div>
       </div>
     </div>
   )
