@@ -122,6 +122,9 @@ export interface ProjectFormData {
   retarget_facebook: string
   retarget_price: string
 
+  // สถานะเผยแพร่ (0 = offline, 1 = online)
+  published: number
+
   // 9. Images
   images: ProjectImages
 }

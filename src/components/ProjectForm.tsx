@@ -198,6 +198,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             retarget_facebook:
               apiData.ads?.retarget_facebook_content_type || '',
             retarget_price: apiData.ads?.retarget_price_start || '',
+            published: Number(apiData.published) || 0,
             images: {
               project: {
                 thumbnail: apiData.images?.project?.thumbnail || '',
@@ -370,6 +371,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     retarget_google: '',
     retarget_facebook: '',
     retarget_price: '',
+    published: 0,
     images: emptyProjectImages()
   })
 
@@ -626,7 +628,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
                 ]
               : [{ title_th: formData.property_type, title_en: '', id: 0 }]
           })(),
-          published: 0,
+          published: formData.published,
           selloffice: {
             contact_number: formData.selloffice_contact_number,
             address_selloffice: formData.selloffice_address
@@ -645,7 +647,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           livingscore: ''
         },
         geopoint: { coordinates: [formData.lon, formData.lat], type: 'Point' },
-        isShouldUpdate: 0,
+        // published = 1 (online) -> isShouldUpdate = 1, published = 0 (offline) -> 0
+        isShouldUpdate: formData.published === 1 ? 1 : 0,
         deletedAt: ''
       }
 
