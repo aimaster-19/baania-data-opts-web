@@ -97,23 +97,44 @@ function SaleStatusBadge({ status }: { status: string }) {
 }
 
 // สถานะการเผยแพร่ — published: 0 = offline, อื่น ๆ = online
-function PublishBadge({ published }: { published: number }) {
+// สถานะการเผยแพร่ — toggle: published 0 = ออฟไลน์, 1 = ออนไลน์
+function PublishToggle({
+  published,
+  pending,
+  onToggle
+}: {
+  published: number
+  pending: boolean
+  onToggle: () => void
+}) {
   const isOnline = published !== 0
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-        isOnline
-          ? 'bg-emerald-50 text-emerald-700'
-          : 'bg-slate-100 text-slate-500'
-      }`}
+    <button
+      type='button'
+      disabled={pending}
+      onClick={onToggle}
+      title={isOnline ? 'คลิกเพื่อปิด (ออฟไลน์)' : 'คลิกเพื่อเปิด (ออนไลน์)'}
+      className='inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait'
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full ${
-          isOnline ? 'bg-emerald-500' : 'bg-slate-400'
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+          isOnline ? 'bg-emerald-500' : 'bg-slate-300'
         }`}
-      />
-      {isOnline ? 'ออนไลน์' : 'ออฟไลน์'}
-    </span>
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+            isOnline ? 'translate-x-4' : 'translate-x-0.5'
+          }`}
+        />
+      </span>
+      <span
+        className={`text-xs font-medium ${
+          isOnline ? 'text-emerald-700' : 'text-slate-500'
+        }`}
+      >
+        {pending ? 'กำลังบันทึก...' : isOnline ? 'ออนไลน์' : 'ออฟไลน์'}
+      </span>
+    </button>
   )
 }
 
@@ -135,6 +156,7 @@ export default function ListProject() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   // Query params — these drive the API call
   const [searchInput, setSearchInput] = useState('') // what user types (instant)
@@ -210,6 +232,30 @@ export default function ListProject() {
       fetchProjects() // re-fetch to stay in sync with server
     } catch (err) {
       alert(getApiErrorMessage(err, 'ลบไม่สำเร็จ'))
+    }
+  }
+
+  // เปลี่ยนสถานะเผยแพร่ (toggle) — ยืนยันก่อนส่ง PATCH /projectread/status/:id
+  const handleToggleStatus = async (project: Project) => {
+    const next: 0 | 1 = project.published === 0 ? 1 : 0
+    const label = next === 1 ? 'ออนไลน์' : 'ออฟไลน์'
+    if (
+      !confirm(
+        `ต้องการเปลี่ยนสถานะโครงการ "${project.name}" เป็น ${label} ใช่หรือไม่?`
+      )
+    )
+      return
+
+    setTogglingId(project.id)
+    try {
+      await api.patch(`/projectread/status/${project.id}`, { published: next })
+      setProjects((prev) =>
+        prev.map((p) => (p.id === project.id ? { ...p, published: next } : p))
+      )
+    } catch (err) {
+      alert(getApiErrorMessage(err, 'เปลี่ยนสถานะไม่สำเร็จ'))
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -466,7 +512,11 @@ export default function ListProject() {
                       <SaleStatusBadge status={project.saleStatus} />
                     </td>
                     <td className='px-6 py-3'>
-                      <PublishBadge published={project.published} />
+                      <PublishToggle
+                        published={project.published}
+                        pending={togglingId === project.id}
+                        onToggle={() => handleToggleStatus(project)}
+                      />
                     </td>
                     <td className='px-6 py-3'>
                       <div className='flex items-center justify-center gap-1'>
