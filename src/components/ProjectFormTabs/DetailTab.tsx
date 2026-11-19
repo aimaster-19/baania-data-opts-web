@@ -15,11 +15,25 @@ const toDateInput = (sec: number) => {
 const fromDateInput = (v: string) =>
   v ? Math.floor(new Date(v + 'T00:00:00').getTime() / 1000) : 0
 
+const areaInputClass =
+  'w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-sm bg-white'
+
 export const DetailTab: React.FC<ProjectTabProps> = ({
   formData,
   handleInputChange,
   setFormData
 }) => {
+  // งาน: จำนวนเต็ม 0–4 / วา: 0–100
+  const setArea =
+    (name: 'area_ngan' | 'area_wa', max: number, integer: boolean) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value
+      let n = raw === '' ? 0 : Number(raw)
+      if (isNaN(n)) n = 0
+      if (integer) n = Math.floor(n)
+      n = Math.max(0, Math.min(max, n))
+      setFormData((prev) => ({ ...prev, [name]: n }))
+    }
   const setHtmlField =
     (name: 'highlight' | 'detail' | 'promotion' | 'info_rationeccomend') =>
     (html: string) =>
@@ -120,22 +134,36 @@ export const DetailTab: React.FC<ProjectTabProps> = ({
           formData={formData}
           handleInputChange={handleInputChange}
         />
-        <ProjectInput
-          label='พื้นที่ (งาน)'
-          name='area_ngan'
-          placeholder='เช่น 3'
-          type='number'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
-        <ProjectInput
-          label='พื้นที่ (วา)'
-          name='area_wa'
-          placeholder='เช่น 93'
-          type='number'
-          formData={formData}
-          handleInputChange={handleInputChange}
-        />
+        <div>
+          <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+            พื้นที่ (งาน)
+          </label>
+          <input
+            type='number'
+            min={0}
+            max={3}
+            step={1}
+            value={formData.area_ngan || ''}
+            onChange={setArea('area_ngan', 3, true)}
+            placeholder='0–3'
+            className={areaInputClass}
+          />
+        </div>
+        <div>
+          <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+            พื้นที่ (วา)
+          </label>
+          <input
+            type='number'
+            min={0}
+            max={99.99}
+            step={0.01}
+            value={formData.area_wa || ''}
+            onChange={setArea('area_wa', 99.99, false)}
+            placeholder='0–99.99'
+            className={areaInputClass}
+          />
+        </div>
         <ProjectInput
           label='จำนวนยูนิตทั้งหมด'
           name='num_unit'
@@ -209,6 +237,48 @@ export const DetailTab: React.FC<ProjectTabProps> = ({
         formData={formData}
         handleInputChange={handleInputChange}
       />
+
+      {/* ── ความคืบหน้าโครงการ (Progress) ── */}
+      <h2 className='text-lg font-bold text-slate-800 border-b pb-2 mt-6'>
+        ความคืบหน้าโครงการ (Progress)
+      </h2>
+      <div className='grid grid-cols-2 md:grid-cols-3 gap-5'>
+        <ProjectInput
+          label='ความคืบหน้ารวม'
+          name='progress_overall'
+          placeholder='เช่น 80%'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='งานโครงสร้าง'
+          name='progress_structure'
+          placeholder='เช่น 90%'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='งานสถาปัตย์'
+          name='progress_architect'
+          placeholder='เช่น 70%'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='งานระบบ'
+          name='progress_system'
+          placeholder='เช่น 60%'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='งานเดินสายไฟ'
+          name='progress_wiring'
+          placeholder='เช่น 50%'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+      </div>
     </div>
   )
 }

@@ -11,6 +11,13 @@ export type TabType =
   | 'contact'
   | 'ads_meta'
   | 'images'
+  | 'video'
+
+export interface PropertyTypeItem {
+  id: number
+  title_th: string
+  title_en: string
+}
 
 export interface ProjectFormData {
   // 1. Basic Info
@@ -18,7 +25,7 @@ export interface ProjectFormData {
   title_en: string
   code: string
   search_keyword: string
-  property_type: string
+  property_type: PropertyTypeItem[]
   status: string
   mgnt_status: string
   building_amount: string
@@ -65,6 +72,13 @@ export interface ProjectFormData {
   num_parking: number
   insurance_condition: string
   area_shared: string
+
+  // 4b. Progress
+  progress_overall: string
+  progress_system: string
+  progress_architect: string
+  progress_structure: string
+  progress_wiring: string
 
   // 5. Facilities
   has_pool: boolean
@@ -115,6 +129,15 @@ export interface ProjectFormData {
   selloffice_contact_number: string
   selloffice_address: string
 
+  // 7b. Footnote
+  info_landlord: string
+  info_shared_prop: string
+  info_landzone: string
+  info_designer: string
+  info_land_id: string
+  info_license_id: string
+  info_financial: string
+
   // 8. Ads & Meta
   meta_keywords: string
   meta_description: string
@@ -127,7 +150,28 @@ export interface ProjectFormData {
 
   // 9. Images
   images: ProjectImages
+
+  // 10. Videos
+  video: ProjectVideos
 }
+
+export interface ProjectVideoItem {
+  thumbnail: string
+  title: string
+  url: string
+}
+
+export interface ProjectVideos {
+  video: ProjectVideoItem
+  aerial: ProjectVideoItem
+  customer: ProjectVideoItem
+}
+
+export const emptyProjectVideos = (): ProjectVideos => ({
+  video: { thumbnail: '', title: '', url: '' },
+  aerial: { thumbnail: '', title: '', url: '' },
+  customer: { thumbnail: '', title: '', url: '' }
+})
 
 export interface ProjectSimpleImage {
   thumbnail: string

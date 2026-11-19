@@ -298,23 +298,52 @@ export const BasicInfoTab: React.FC<ProjectTabProps> = ({
           <div>
             <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
               ประเภทโครงการ <span className='text-red-500'>*</span>
+              <span className='font-normal text-slate-400 ml-1'>
+                (เลือกได้หลายประเภท)
+              </span>
             </label>
-            <select
-              name='property_type'
-              value={formData.property_type}
-              onChange={handleInputChange}
-              disabled={isLoadingTypes}
-              className='w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-100 disabled:text-slate-400'
-            >
-              <option value=''>
-                {isLoadingTypes ? 'กำลังโหลดประเภทโครงการ...' : 'เลือกประเภท'}
-              </option>
-              {propertyTypes.map((type) => (
-                <option key={type.id} value={type.name_th}>
-                  {type.name_th} {type.name_en ? `(${type.name_en})` : ''}
-                </option>
-              ))}
-            </select>
+            {isLoadingTypes ? (
+              <p className='text-sm text-slate-400 py-2'>
+                กำลังโหลดประเภทโครงการ...
+              </p>
+            ) : (
+              <div className='flex flex-wrap gap-2'>
+                {propertyTypes.map((type) => {
+                  const typeId = Number(type.id)
+                  const checked = formData.property_type.some(
+                    (p) => p.id === typeId
+                  )
+                  return (
+                    <button
+                      key={type.id}
+                      type='button'
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          property_type: checked
+                            ? prev.property_type.filter((p) => p.id !== typeId)
+                            : [
+                                ...prev.property_type,
+                                {
+                                  id: typeId,
+                                  title_th: type.name_th,
+                                  title_en: type.name_en
+                                }
+                              ]
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                        checked
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      {type.name_th}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
           <div>
             <label className='block text-sm font-semibold text-slate-700 mb-1.5'>

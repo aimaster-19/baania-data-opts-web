@@ -8,6 +8,7 @@ import {
   Tag,
   Phone,
   Image as ImageIcon,
+  Video as VideoIcon,
   ChevronRight,
   ChevronLeft,
   Loader2,
@@ -18,10 +19,9 @@ import api from '../lib/axios'
 import { getApiErrorMessage } from '../lib/errors'
 
 import type { ProjectFormData, TabType } from '../types/project/form'
-import { emptyProjectImages } from '../types/project/form'
+import { emptyProjectImages, emptyProjectVideos } from '../types/project/form'
 import type { BaaniaDocument } from '../types/common'
 import type { Province } from '../types/province'
-import { usePropertyTypes } from '../hooks/usePropertyTypes'
 import { BasicInfoTab } from './ProjectFormTabs/BasicInfoTab'
 import { AddressTab } from './ProjectFormTabs/AddressTab'
 import { UnittypeTab } from './ProjectFormTabs/UnittypeTab'
@@ -31,10 +31,10 @@ import { FinancialTab } from './ProjectFormTabs/FinancialTab'
 import { ContactTab } from './ProjectFormTabs/ContactTab'
 import { AdsMetaTab } from './ProjectFormTabs/AdsMetaTab'
 import { ImagesTab } from './ProjectFormTabs/ImagesTab'
+import { VideoTab } from './ProjectFormTabs/VideoTab'
 
 export default function ProjectForm({ projectId }: { projectId?: string }) {
   const navigate = useNavigate()
-  const { propertyTypes } = usePropertyTypes()
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('basic')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -74,7 +74,19 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             title_en: apiData.info?.title_en || '',
             code: apiData.info?.code || '',
             search_keyword: apiData.info?.search_keyword || '',
-            property_type: apiData.property_type?.[0]?.title_th || '',
+            property_type: Array.isArray(apiData.property_type)
+              ? apiData.property_type.map(
+                  (p: {
+                    id?: number | string
+                    title_th?: string
+                    title_en?: string
+                  }) => ({
+                    id: Number(p.id) || 0,
+                    title_th: p.title_th || '',
+                    title_en: p.title_en || ''
+                  })
+                )
+              : [],
             status: apiData.general?.status || 'on-sale',
             mgnt_status: apiData.general?.mgnt_status || 'none',
             building_amount: apiData.general?.building_amount || 'None',
@@ -144,6 +156,11 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             num_parking: apiData.detail?.num_parking || 0,
             insurance_condition: apiData.detail?.insurance_condition || '',
             area_shared: apiData.detail?.area_shared || '',
+            progress_overall: apiData.progress?.progress_overall || '',
+            progress_system: apiData.progress?.progress_system || '',
+            progress_architect: apiData.progress?.progress_architect || '',
+            progress_structure: apiData.progress?.progress_structure || '',
+            progress_wiring: apiData.progress?.progress_wiring || '',
             has_pool: Boolean(apiData.facility?.has_pool),
             info_pool: apiData.facility?.info_pool || '',
             has_fitness: Boolean(apiData.facility?.has_fitness),
@@ -192,6 +209,13 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             line: apiData.line || '',
             selloffice_contact_number: apiData.selloffice?.contact_number || '',
             selloffice_address: apiData.selloffice?.address_selloffice || '',
+            info_landlord: apiData.footnote?.info_landlord || '',
+            info_shared_prop: apiData.footnote?.info_shared_prop || '',
+            info_landzone: apiData.footnote?.info_landzone || '',
+            info_designer: apiData.footnote?.info_designer || '',
+            info_land_id: apiData.footnote?.info_land_id || '',
+            info_license_id: apiData.footnote?.info_license_id || '',
+            info_financial: apiData.footnote?.info_financial || '',
             meta_keywords: apiData.meta?.meta_keywords || '',
             meta_description: apiData.meta?.meta_description || '',
             retarget_google: apiData.ads?.retarget_google_content_type || '',
@@ -235,6 +259,23 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
                 title: apiData.images?.map?.title || '',
                 url: apiData.images?.map?.url || ''
               }
+            },
+            video: {
+              video: {
+                thumbnail: apiData.video?.video?.thumbnail || '',
+                title: apiData.video?.video?.title || '',
+                url: apiData.video?.video?.url || ''
+              },
+              aerial: {
+                thumbnail: apiData.video?.aerial?.thumbnail || '',
+                title: apiData.video?.aerial?.title || '',
+                url: apiData.video?.aerial?.url || ''
+              },
+              customer: {
+                thumbnail: apiData.video?.customer?.thumbnail || '',
+                title: apiData.video?.customer?.title || '',
+                url: apiData.video?.customer?.url || ''
+              }
             }
           })
         })
@@ -253,7 +294,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     title_en: '',
     code: '',
     search_keyword: '',
-    property_type: '',
+    property_type: [],
     status: 'on-sale',
     mgnt_status: 'none',
     building_amount: 'None',
@@ -323,6 +364,11 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     num_parking: 0,
     insurance_condition: '',
     area_shared: '',
+    progress_overall: '',
+    progress_system: '',
+    progress_architect: '',
+    progress_structure: '',
+    progress_wiring: '',
     has_pool: false,
     info_pool: '',
     has_fitness: false,
@@ -366,13 +412,21 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
     line: '',
     selloffice_contact_number: '',
     selloffice_address: '',
+    info_landlord: '',
+    info_shared_prop: '',
+    info_landzone: '',
+    info_designer: '',
+    info_land_id: '',
+    info_license_id: '',
+    info_financial: '',
     meta_keywords: '',
     meta_description: '',
     retarget_google: '',
     retarget_facebook: '',
     retarget_price: '',
     published: 0,
-    images: emptyProjectImages()
+    images: emptyProjectImages(),
+    video: emptyProjectVideos()
   })
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
@@ -404,7 +458,8 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
       label: 'SEO & โฆษณา',
       icon: <Globe className='w-4 h-4' />
     },
-    { id: 'images', label: 'รูปภาพ', icon: <ImageIcon className='w-4 h-4' /> }
+    { id: 'images', label: 'รูปภาพ', icon: <ImageIcon className='w-4 h-4' /> },
+    { id: 'video', label: 'วิดีโอ', icon: <VideoIcon className='w-4 h-4' /> }
   ]
 
   const handleInputChange = (
@@ -436,7 +491,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
   }
 
   const handleSave = async () => {
-    if (!formData.title_th || !formData.property_type) {
+    if (!formData.title_th || formData.property_type.length === 0) {
       alert('กรุณากรอกชื่อโครงการ (TH) และเลือกประเภทโครงการ')
       setActiveTab('basic')
       return
@@ -547,13 +602,13 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             not_show_start_price: formData.not_show_start_price
           },
           footnote: {
-            info_landlord: '',
-            info_shared_prop: '',
-            info_landzone: '',
-            info_designer: '',
-            info_land_id: '',
-            info_license_id: '',
-            info_financial: ''
+            info_landlord: formData.info_landlord,
+            info_shared_prop: formData.info_shared_prop,
+            info_landzone: formData.info_landzone,
+            info_designer: formData.info_designer,
+            info_land_id: formData.info_land_id,
+            info_license_id: formData.info_license_id,
+            info_financial: formData.info_financial
           },
           general: {
             building_amount: formData.building_amount,
@@ -593,14 +648,14 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             meta_description: formData.meta_description
           },
           progress: {
-            progress_overall: '',
-            progress_system: '',
+            progress_overall: formData.progress_overall,
+            progress_system: formData.progress_system,
             date_start: formData.date_construction,
             date_construction: formData.date_construction,
-            progress_architect: '',
+            progress_architect: formData.progress_architect,
             date_finish: formData.date_finish,
-            progress_structure: '',
-            progress_wiring: ''
+            progress_structure: formData.progress_structure,
+            progress_wiring: formData.progress_wiring
           },
           promote: {
             promote_review: 0,
@@ -614,20 +669,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             promote_comment: '',
             promote_start_date: 0
           },
-          property_type: (() => {
-            const selectedTypeObj = propertyTypes.find(
-              (t) => t.name_th === formData.property_type
-            )
-            return selectedTypeObj
-              ? [
-                  {
-                    title_th: selectedTypeObj.name_th,
-                    title_en: selectedTypeObj.name_en,
-                    id: Number(selectedTypeObj.id)
-                  }
-                ]
-              : [{ title_th: formData.property_type, title_en: '', id: 0 }]
-          })(),
+          property_type: formData.property_type,
           published: formData.published,
           selloffice: {
             contact_number: formData.selloffice_contact_number,
@@ -637,11 +679,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           uid: 'admin_user',
           unittype: formData.unittype,
           url: { alias_th: formData.title_th, alias_en: formData.title_en },
-          video: {
-            video: { thumbnail: '', title: '', url: '' },
-            aerial: { thumbnail: '', title: '', url: '' },
-            customer: { thumbnail: '', title: '', url: '' }
-          },
+          video: formData.video,
           website: formData.website,
           exreview: '',
           livingscore: ''
@@ -720,6 +758,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           {activeTab === 'contact' && <ContactTab {...tabProps} />}
           {activeTab === 'ads_meta' && <AdsMetaTab {...tabProps} />}
           {activeTab === 'images' && <ImagesTab {...tabProps} />}
+          {activeTab === 'video' && <VideoTab {...tabProps} />}
         </div>
 
         {/* Footer Navigation */}
@@ -732,7 +771,7 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             <ChevronLeft className='w-5 h-5' /> ย้อนกลับ
           </button>
 
-          {activeTab === 'images' ? (
+          {activeTab === 'video' ? (
             <button
               onClick={handleSave}
               disabled={isSubmitting}

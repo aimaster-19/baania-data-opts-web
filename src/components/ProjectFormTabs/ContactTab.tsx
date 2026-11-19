@@ -65,6 +65,58 @@ export const ContactTab: React.FC<ProjectTabProps> = ({
           handleInputChange={handleInputChange}
         />
       </div>
+
+      <h2 className='text-lg font-bold text-slate-800 border-b pb-2 mt-6'>
+        เชิงอรรถ (Footnote)
+      </h2>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+        <ProjectInput
+          label='เจ้าของที่ดิน (Landlord)'
+          name='info_landlord'
+          placeholder='เช่น บริษัท ศุภาลัย จำกัด (มหาชน)'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='ทรัพย์ส่วนกลาง (Shared Property)'
+          name='info_shared_prop'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='ผังเมือง / โซนที่ดิน (Landzone)'
+          name='info_landzone'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='เลขที่โฉนด (Land ID)'
+          name='info_land_id'
+          placeholder='เช่น 3321, 3618, 3619'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='เลขที่ใบอนุญาต (License ID)'
+          name='info_license_id'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+        <ProjectInput
+          label='ข้อมูลการเงิน (Financial)'
+          name='info_financial'
+          formData={formData}
+          handleInputChange={handleInputChange}
+        />
+      </div>
+      <ProjectTextarea
+        label='ผู้ออกแบบ (Designer)'
+        name='info_designer'
+        placeholder='ชื่อ-คุณวุฒิผู้ออกแบบโครงการ'
+        rows={3}
+        formData={formData}
+        handleInputChange={handleInputChange}
+      />
     </div>
   )
 }
