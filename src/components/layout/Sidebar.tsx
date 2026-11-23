@@ -5,7 +5,8 @@ import {
   Settings,
   Database,
   Building2,
-  Building
+  Building,
+  Home
 } from 'lucide-react'
 
 export default function Sidebar() {
@@ -14,6 +15,7 @@ export default function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/profile', icon: LayoutDashboard },
     { name: 'โครงการ', href: '/projects', icon: Building2 },
+    { name: 'แบบบ้าน', href: '/unittypes', icon: Home },
     { name: 'ผู้พัฒนาโครงการ', href: '/developers', icon: Building },
     { name: 'Users', href: '#', icon: Users },
     { name: 'Data Management', href: '#', icon: Database },

@@ -8,6 +8,8 @@ import CreateProject from '../pages/projects/CreateProject'
 import ListProject from '../pages/projects/ListProject'
 import UpdateProject from '../pages/projects/UpdateProject'
 import ListDeveloper from '../pages/developers/ListDeveloper'
+import CreateUnittype from '../pages/unittypes/CreateUnittype'
+import ListUnittype from '../pages/unittypes/ListUnittype'
 
 export default function AppRoutes() {
   return (
@@ -26,6 +28,11 @@ export default function AppRoutes() {
           <Route path='/developers' element={<ListDeveloper />} />
           <Route path='/create-project' element={<CreateProject />} />
           <Route path='/edit-project/:id' element={<UpdateProject />} />
+          <Route path='/unittypes' element={<ListUnittype />} />
+          <Route
+            path='/create-unittype/:projectId'
+            element={<CreateUnittype />}
+          />
         </Route>
       </Route>
 

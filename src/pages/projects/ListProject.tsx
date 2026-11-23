@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
+  Home,
   Image as ImageIcon,
   X,
   SlidersHorizontal,
@@ -551,6 +552,15 @@ export default function ListProject() {
                           className='p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer'
                         >
                           <Eye className='w-4 h-4' />
+                        </button>
+                        <button
+                          title='สร้างแบบบ้าน (Unit Type)'
+                          onClick={() =>
+                            navigate(`/create-unittype/${project.id}`)
+                          }
+                          className='p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer'
+                        >
+                          <Home className='w-4 h-4' />
                         </button>
                         <button
                           title='แก้ไข'

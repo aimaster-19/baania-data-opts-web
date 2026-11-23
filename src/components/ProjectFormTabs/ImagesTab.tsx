@@ -20,7 +20,7 @@ export const ImagesTab: React.FC<ProjectTabProps> = ({
   const uploadToServer = async (files: File[]): Promise<string[]> => {
     const fd = new FormData()
     files.forEach((file) => fd.append('images', file))
-    fd.append('folder', 'projects')
+    fd.append('type', 'project')
 
     const res = await api.post('/upload/images', fd, {
       headers: { 'Content-Type': 'multipart/form-data' }
