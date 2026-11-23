@@ -33,6 +33,7 @@ export default function AppRoutes() {
             path='/create-unittype/:projectId'
             element={<CreateUnittype />}
           />
+          <Route path='/edit-unittype/:id' element={<CreateUnittype />} />
         </Route>
       </Route>
 

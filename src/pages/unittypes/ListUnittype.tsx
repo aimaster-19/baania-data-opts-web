@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Home,
   Search,
   RefreshCw,
   Loader2,
   Trash2,
+  Pencil,
   Image as ImageIcon,
   BedDouble,
   Bath,
@@ -49,6 +51,7 @@ function PublishBadge({ published }: { published?: number }) {
 }
 
 export default function ListUnittype() {
+  const navigate = useNavigate()
   const [rows, setRows] = useState<UnittypeRow[]>([])
   const [pagination, setPagination] = useState<PaginationMeta>({
     page: 1,
@@ -271,7 +274,14 @@ export default function ListUnittype() {
                       <PublishBadge published={d.published} />
                     </td>
                     <td className='px-6 py-3'>
-                      <div className='flex items-center justify-center'>
+                      <div className='flex items-center justify-center gap-1'>
+                        <button
+                          title='แก้ไข'
+                          onClick={() => navigate(`/edit-unittype/${row._id}`)}
+                          className='p-2 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all'
+                        >
+                          <Pencil className='w-4 h-4' />
+                        </button>
                         <button
                           title='ลบ'
                           disabled={deletingId === row._id}

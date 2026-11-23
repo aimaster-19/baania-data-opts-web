@@ -173,11 +173,24 @@ const getYoutubeId = (url: string) => {
 }
 
 export default function CreateUnittype() {
-  const { projectId } = useParams()
+  const { projectId, id } = useParams()
   const navigate = useNavigate()
   const { propertyTypes } = usePropertyTypes()
 
-  const [projectDoc, setProjectDoc] = useState<AnyObj | null>(null)
+  const [ready, setReady] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [projectRef, setProjectRef] = useState<AnyObj>({})
+  const [refTitle, setRefTitle] = useState('')
+  const [unitAddress, setUnitAddress] = useState<AnyObj>({})
+  const [unitLocation, setUnitLocation] = useState({
+    heading: '',
+    lat: 0,
+    lon: 0
+  })
+  const [unitSelloffice, setUnitSelloffice] = useState({
+    contact_number: '',
+    address_selloffice: ''
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -241,23 +254,162 @@ export default function CreateUnittype() {
   const [video, setVideo] = useState({ thumbnail: '', title: '', url: '' })
   const [published, setPublished] = useState(0) // 0 = offline, 1 = online
 
-  const fetchProject = useCallback(async () => {
-    if (!projectId) return
+  const s = (v: unknown) => (v == null ? '' : String(v))
+
+  // เติมค่าในฟอร์มจากข้อมูล unittype เดิม (โหมดแก้ไข)
+  const prefillFromUnittype = useCallback((d: AnyObj) => {
+    const info0 = (d.info || {}) as AnyObj
+    setInfo({
+      title_th: s(info0.title_th),
+      title_en: s(info0.title_en),
+      code: s(info0.code),
+      search_keyword: s(info0.search_keyword)
+    })
+    const pt = (
+      Array.isArray(d.property_type) ? d.property_type[0] : null
+    ) as AnyObj | null
+    setPropertyTypeId(pt ? s(pt.id) : '')
+    const dev = (d.developer || {}) as AnyObj
+    setDeveloper({
+      id: Number(dev.id) || 0,
+      name_th: s(dev.name_th),
+      name_en: s(dev.name_en)
+    })
+    const g = (d.general || {}) as AnyObj
+    setGeneral({
+      num_unit: s(g.num_unit),
+      status: s(g.status) || 'on-sale',
+      highlight: s(g.highlight),
+      detail: s(g.detail)
+    })
+    const dt = (d.detail || {}) as AnyObj
+    setDetail({
+      num_bed: s(dt.num_bed),
+      num_bath: s(dt.num_bath),
+      num_floor: s(dt.num_floor),
+      num_parking: s(dt.num_parking),
+      area_usable: s(dt.area_usable),
+      num_maid: s(dt.num_maid),
+      num_kitchen: s(dt.num_kitchen),
+      num_living: s(dt.num_living),
+      num_dinning: s(dt.num_dinning),
+      num_guest: s(dt.num_guest),
+      num_aircond: s(dt.num_aircond),
+      num_util: s(dt.num_util),
+      num_storage: s(dt.num_storage),
+      is_half_floor: !!dt.is_half_floor
+    })
+    const m = (d.meta || {}) as AnyObj
+    setMeta({
+      meta_keywords: s(m.meta_keywords),
+      meta_description: s(m.meta_description)
+    })
+    const f = (d.financial || {}) as AnyObj
+    setFinancial({
+      price_start: s(f.price_start),
+      not_show_start_price: !!f.not_show_start_price,
+      start_price_not_found: !!f.start_price_not_found
+    })
+    const fac = (d.facility || {}) as AnyObj
+    const bools: Record<string, boolean> = {}
+    const infos: Record<string, string> = {}
+    Object.entries(fac).forEach(([k, v]) => {
+      if (k.startsWith('info_')) infos[k] = s(v)
+      else bools[k] = !!v
+    })
+    setFacilityBool(bools)
+    setFacilityInfo((prev) => ({ ...prev, ...infos }))
+    const img = (d.images || {}) as AnyObj
+    const mainImg = (img.main || {}) as AnyObj
+    setMainImage(s(mainImg.url) || s(mainImg.thumbnail))
+    setOverall(
+      (Array.isArray(img.overall) ? (img.overall as AnyObj[]) : []).map(
+        (o) => ({
+          title: s(o.title),
+          url: s(o.url),
+          thumbnail: s(o.thumbnail) || s(o.url)
+        })
+      )
+    )
+    const v = (d.video || {}) as AnyObj
+    setVideo({ thumbnail: s(v.thumbnail), title: s(v.title), url: s(v.url) })
+    setPublished(Number(d.published) || 0)
+  }, [])
+
+  const loadData = useCallback(async () => {
     setIsLoading(true)
     setLoadError(null)
     try {
-      const res = await api.get(`/projectread/id/${projectId}`)
-      setProjectDoc(res.data?.data || null)
+      if (id) {
+        // โหมดแก้ไข
+        const res = await api.get(`/unittype/id/${id}`)
+        const doc = (res.data?.data || {}) as AnyObj
+        const d = (doc.data || {}) as AnyObj
+        setEditingId(id)
+        prefillFromUnittype(d)
+        setProjectRef((d.project || {}) as AnyObj)
+        const proj = (d.project || {}) as AnyObj
+        setRefTitle(s(proj.title_th) || s(proj.title_en))
+        setUnitAddress((d.address || {}) as AnyObj)
+        const loc = (d.location || {}) as AnyObj
+        setUnitLocation({
+          heading: s(loc.heading),
+          lat: Number(loc.lat) || 0,
+          lon: Number(loc.lon) || 0
+        })
+        const so = (d.selloffice || {}) as AnyObj
+        setUnitSelloffice({
+          contact_number: s(so.contact_number),
+          address_selloffice: s(so.address_selloffice)
+        })
+        setReady(true)
+      } else if (projectId) {
+        // โหมดสร้าง (ref จากโครงการ)
+        const res = await api.get(`/projectread/id/${projectId}`)
+        const pdoc = (res.data?.data || {}) as AnyObj
+        const pd = (pdoc.data || {}) as AnyObj
+        const addr = (pd.address || {}) as AnyObj
+        const loc = (pd.location || {}) as AnyObj
+        const so = (pd.selloffice || {}) as AnyObj
+        const pinfo = (pd.info || {}) as AnyObj
+        setProjectRef(buildProjectRef(pdoc))
+        setRefTitle(s(pinfo.title_th) || s(pinfo.title_en))
+        setUnitAddress({
+          province_th: s(addr.province_th),
+          province_en: s(addr.province_en),
+          province_id: Number(addr.province_id) || 0,
+          district_th: s(addr.district_th),
+          district_en: s(addr.district_en),
+          district_id: Number(addr.district_id) || 0,
+          subdistrict_th: s(addr.subdistrict_th),
+          subdistrict_en: s(addr.subdistrict_en),
+          subdistrict_id: Number(addr.subdistrict_id) || 0,
+          postcode: Number(addr.postcode) || 0,
+          name_th: s(addr.address_th),
+          name_en: s(addr.address_en),
+          neighbors: s(addr.neighbors)
+        })
+        setUnitLocation({
+          heading: s(loc.heading),
+          lat: Number(loc.lat) || 0,
+          lon: Number(loc.lon) || 0
+        })
+        setUnitSelloffice({
+          contact_number: s(so.contact_number),
+          address_selloffice: s(so.address_selloffice)
+        })
+        setReady(true)
+      }
     } catch (err) {
-      setLoadError(getApiErrorMessage(err, 'ไม่สามารถโหลดข้อมูลโครงการได้'))
+      setLoadError(getApiErrorMessage(err, 'ไม่สามารถโหลดข้อมูลได้'))
     } finally {
       setIsLoading(false)
     }
-  }, [projectId])
+  }, [id, projectId, prefillFromUnittype])
 
   useEffect(() => {
-    fetchProject()
-  }, [fetchProject])
+    loadData()
+  }, [loadData])
 
   // ── upload helpers ──
   const uploadFiles = async (files: File[]): Promise<string[]> => {
@@ -323,17 +475,12 @@ export default function CreateUnittype() {
   }
 
   const buildPayload = () => {
-    if (!projectDoc) return null
-    const d = (projectDoc.data || {}) as AnyObj
-    const addr = (d.address || {}) as AnyObj
-    const loc = (d.location || {}) as AnyObj
-    const so = (d.selloffice || {}) as AnyObj
-
+    if (!ready) return null
     const selectedType = propertyTypes.find(
       (t) => String(t.id) === propertyTypeId
     )
-    const lat = Number(loc.lat) || 0
-    const lon = Number(loc.lon) || 0
+    const lat = unitLocation.lat
+    const lon = unitLocation.lon
 
     return {
       data: {
@@ -409,32 +556,15 @@ export default function CreateUnittype() {
           }))
         },
         video,
-        // inherit จากโครงการ
-        address: {
-          province_th: String(addr.province_th || ''),
-          province_en: String(addr.province_en || ''),
-          province_id: Number(addr.province_id) || 0,
-          district_th: String(addr.district_th || ''),
-          district_en: String(addr.district_en || ''),
-          district_id: Number(addr.district_id) || 0,
-          subdistrict_th: String(addr.subdistrict_th || ''),
-          subdistrict_en: String(addr.subdistrict_en || ''),
-          subdistrict_id: Number(addr.subdistrict_id) || 0,
-          postcode: Number(addr.postcode) || 0,
-          name_th: String(addr.address_th || ''),
-          name_en: String(addr.address_en || ''),
-          neighbors: String(addr.neighbors || '')
-        },
-        location: { heading: String(loc.heading || ''), lat, lon },
-        selloffice: {
-          contact_number: String(so.contact_number || ''),
-          address_selloffice: String(so.address_selloffice || '')
-        },
+        // inherit จากโครงการ (หรือค่าเดิมในโหมดแก้ไข)
+        address: unitAddress,
+        location: { heading: unitLocation.heading, lat, lon },
+        selloffice: unitSelloffice,
         url: {
           alias_th: info.title_th.trim(),
           alias_en: info.title_en.trim()
         },
-        project: buildProjectRef(projectDoc),
+        project: projectRef,
         published
       },
       geopoint: { type: 'Point', coordinates: [lon, lat] },
@@ -456,8 +586,13 @@ export default function CreateUnittype() {
     if (!payload) return
     setIsSaving(true)
     try {
-      await api.post('/unittype/add', payload)
-      alert('สร้างแบบบ้านสำเร็จ!')
+      if (editingId) {
+        await api.put(`/unittype/update/${editingId}`, payload)
+        alert('แก้ไขแบบบ้านสำเร็จ!')
+      } else {
+        await api.post('/unittype/add', payload)
+        alert('สร้างแบบบ้านสำเร็จ!')
+      }
       navigate('/unittypes')
     } catch (err) {
       alert(getApiErrorMessage(err, 'บันทึกแบบบ้านไม่สำเร็จ'))
@@ -473,22 +608,19 @@ export default function CreateUnittype() {
       </div>
     )
   }
-  if (loadError || !projectDoc) {
+  if (loadError || !ready) {
     return (
       <div className='max-w-3xl mx-auto py-16 px-4 text-center'>
-        <p className='text-red-600 mb-4'>{loadError || 'ไม่พบโครงการ'}</p>
+        <p className='text-red-600 mb-4'>{loadError || 'ไม่พบข้อมูล'}</p>
         <button
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate('/unittypes')}
           className='text-blue-600 hover:underline'
         >
-          กลับไปหน้ารายการโครงการ
+          กลับไปหน้ารายการแบบบ้าน
         </button>
       </div>
     )
   }
-
-  const pdata = (projectDoc.data || {}) as AnyObj
-  const pinfo = (pdata.info || {}) as AnyObj
 
   const tabs: { id: TabKey; label: string; icon: React.ReactNode }[] = [
     {
@@ -525,23 +657,22 @@ export default function CreateUnittype() {
   return (
     <div className='max-w-5xl mx-auto py-8 px-4 pb-24'>
       <button
-        onClick={() => navigate('/projects')}
+        onClick={() => navigate(editingId ? '/unittypes' : '/projects')}
         className='flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 mb-4'
       >
-        <ChevronLeft className='w-4 h-4' /> กลับไปรายการโครงการ
+        <ChevronLeft className='w-4 h-4' />{' '}
+        {editingId ? 'กลับไปรายการแบบบ้าน' : 'กลับไปรายการโครงการ'}
       </button>
 
       <div className='mb-6'>
         <h1 className='text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2'>
-          <Home className='w-7 h-7 text-emerald-600' /> สร้างแบบบ้าน (Unit Type)
+          <Home className='w-7 h-7 text-emerald-600' />{' '}
+          {editingId ? 'แก้ไขแบบบ้าน (Unit Type)' : 'สร้างแบบบ้าน (Unit Type)'}
         </h1>
         <div className='mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl'>
           <Building2 className='w-4 h-4 text-blue-500' />
           <span className='text-sm text-blue-900'>
-            โครงการอ้างอิง:{' '}
-            <span className='font-bold'>
-              {String(pinfo.title_th || pinfo.title_en || '-')}
-            </span>
+            โครงการอ้างอิง: <span className='font-bold'>{refTitle || '-'}</span>
           </span>
         </div>
       </div>
