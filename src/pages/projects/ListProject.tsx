@@ -4,7 +4,6 @@ import {
   Search,
   Filter,
   Plus,
-  Eye,
   Pencil,
   Trash2,
   ChevronLeft,
@@ -38,7 +37,13 @@ function mapApiToProject(item: ProjectRead): Project {
     id: item._id || item.keyId || '',
     code: item.keyId || d.info?.code || '-',
     name: d.info?.title_th || d.info?.title_en || '-',
-    type: d.property_type?.[0]?.title_th || '-',
+    type:
+      Array.isArray(d.property_type) && d.property_type.length
+        ? d.property_type
+            .map((p) => p?.title_th)
+            .filter(Boolean)
+            .join(', ')
+        : '-',
     saleStatus: d.general?.status || '-',
     image: d.images?.main?.thumbnail || d.images?.main?.url || '',
     province: d.address?.province_th || '-',
@@ -547,12 +552,6 @@ export default function ListProject() {
                     </td>
                     <td className='px-6 py-3'>
                       <div className='flex items-center justify-center gap-1'>
-                        <button
-                          title='ดูรายละเอียด'
-                          className='p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer'
-                        >
-                          <Eye className='w-4 h-4' />
-                        </button>
                         <button
                           title='สร้างแบบบ้าน (Unit Type)'
                           onClick={() =>

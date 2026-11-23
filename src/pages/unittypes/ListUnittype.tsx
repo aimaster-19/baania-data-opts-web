@@ -67,6 +67,7 @@ export default function ListUnittype() {
 
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('ทั้งหมด') // ทั้งหมด | ออนไลน์ | ออฟไลน์ | ลบ
   const [currentPage, setCurrentPage] = useState(1)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -79,6 +80,9 @@ export default function ListUnittype() {
         limit: ITEMS_PER_PAGE
       }
       if (searchQuery.trim()) params.search = searchQuery.trim()
+      if (selectedStatus === 'ออนไลน์') params.publishStatus = 'online'
+      else if (selectedStatus === 'ออฟไลน์') params.publishStatus = 'offline'
+      else if (selectedStatus === 'ลบ') params.deleted = 'true'
       const { data: res } = await api.get('/unittype/list', { params })
       setRows(res.data || [])
       setPagination(
@@ -96,7 +100,7 @@ export default function ListUnittype() {
     } finally {
       setIsLoading(false)
     }
-  }, [currentPage, searchQuery])
+  }, [currentPage, searchQuery, selectedStatus])
 
   useEffect(() => {
     fetchUnittypes()
@@ -147,6 +151,19 @@ export default function ListUnittype() {
           placeholder='ค้นหาชื่อแบบบ้าน, Project KeyID, KeyID แบบบ้าน...'
           className='flex-1 outline-none text-sm bg-transparent py-1.5'
         />
+        <select
+          value={selectedStatus}
+          onChange={(e) => {
+            setSelectedStatus(e.target.value)
+            setCurrentPage(1)
+          }}
+          className='px-3 py-1.5 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:border-blue-500'
+        >
+          <option value='ทั้งหมด'>ทุกสถานะ</option>
+          <option value='ออนไลน์'>ออนไลน์</option>
+          <option value='ออฟไลน์'>ออฟไลน์</option>
+          <option value='ลบ'>ลบ</option>
+        </select>
         <button
           onClick={fetchUnittypes}
           className='p-2 text-slate-400 hover:text-blue-600 transition-colors'
