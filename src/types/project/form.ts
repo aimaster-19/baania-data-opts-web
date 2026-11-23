@@ -228,11 +228,18 @@ export interface ProjectTabProps {
 }
 
 export interface UnitTypeItem {
-  title: string
-  price_start: number
-  price_end: number
-  area_usable: number
-  num_bed: number
-  num_bath: number
-  sold_out: boolean
+  title?: string
+  title_alt?: string
+  price_start?: number
+  price_end?: number
+  area_usable?: number
+  num_bed?: number
+  num_bath?: number
+  num_parking?: number
+  num_floor?: number
+  sold_out?: boolean
+  published?: number
+  unittype_keyId?: string
+  id?: string
+  image?: { thumbnail?: string; url?: string; title?: string }
 }

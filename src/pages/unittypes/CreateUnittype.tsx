@@ -345,7 +345,8 @@ export default function CreateUnittype() {
         const res = await api.get(`/unittype/id/${id}`)
         const doc = (res.data?.data || {}) as AnyObj
         const d = (doc.data || {}) as AnyObj
-        setEditingId(id)
+        // ใช้ _id จริงสำหรับ PUT (ลิงก์อาจส่ง keyId เข้ามา)
+        setEditingId(String(doc._id || id))
         prefillFromUnittype(d)
         setProjectRef((d.project || {}) as AnyObj)
         const proj = (d.project || {}) as AnyObj
