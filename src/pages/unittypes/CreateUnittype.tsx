@@ -155,6 +155,19 @@ const FACILITY_GROUPS: {
   }
 ]
 
+// รวม facility ทุกคีย์ให้ครบ: ที่ไม่เลือกให้ส่ง false ไปหลังบ้านด้วย
+const buildFacilityBools = (
+  selected: Record<string, boolean>
+): Record<string, boolean> => {
+  const result: Record<string, boolean> = {}
+  FACILITY_GROUPS.forEach((g) => {
+    g.items.forEach((it) => {
+      result[it.key] = !!selected[it.key]
+    })
+  })
+  return result
+}
+
 const inputClass =
   'w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 text-sm bg-white'
 
@@ -533,11 +546,13 @@ export default function CreateUnittype() {
           meta_description: meta.meta_description
         },
         financial: {
-          price_start: num(financial.price_start),
+          // ราคาเริ่มต้น กรอก 0 หรือว่าง -> ส่ง null
+          price_start:
+            num(financial.price_start) > 0 ? num(financial.price_start) : null,
           not_show_start_price: financial.not_show_start_price,
           start_price_not_found: financial.start_price_not_found
         },
-        facility: { ...facilityBool, ...facilityInfo },
+        facility: { ...buildFacilityBools(facilityBool), ...facilityInfo },
         images: {
           main: {
             thumbnail: mainImage,
@@ -591,10 +606,13 @@ export default function CreateUnittype() {
         await api.put(`/unittype/update/${editingId}`, payload)
         alert('แก้ไขแบบบ้านสำเร็จ!')
       } else {
-        await api.post('/unittype/add', payload)
+        const res = await api.post('/unittype/add', payload)
+        // สร้างสำเร็จแล้วเปลี่ยนเป็นโหมดแก้ไข เพื่อให้กดบันทึกซ้ำได้โดยไม่สร้างซ้ำ
+        const newId = res?.data?.data?._id
+        if (newId) setEditingId(newId)
         alert('สร้างแบบบ้านสำเร็จ!')
       }
-      navigate('/unittypes')
+      // ค้างอยู่หน้าบันทึกเหมือนเดิม ไม่กลับไปหน้ารายการ
     } catch (err) {
       alert(getApiErrorMessage(err, 'บันทึกแบบบ้านไม่สำเร็จ'))
     } finally {

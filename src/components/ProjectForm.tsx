@@ -33,6 +33,26 @@ import { AdsMetaTab } from './ProjectFormTabs/AdsMetaTab'
 import { ImagesTab } from './ProjectFormTabs/ImagesTab'
 import { VideoTab } from './ProjectFormTabs/VideoTab'
 
+// วันที่เก็บเป็น unix timestamp — แปลง unix -> yyyy-mm-dd (ให้ input calendar แสดง)
+// และ yyyy-mm-dd -> unix (วินาที) ตอนบันทึก
+const unixToYMD = (v: unknown) => {
+  if (v === '' || v == null) return ''
+  let n = Number(v)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  if (n < 1e12) n = n * 1000 // วินาที -> มิลลิวินาที
+  const d = new Date(n)
+  if (isNaN(d.getTime())) return ''
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+const ymdToUnix = (v: string) => {
+  if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return 0
+  const t = new Date(v + 'T00:00:00').getTime()
+  return isNaN(t) ? 0 : Math.floor(t / 1000)
+}
+
 export default function ProjectForm({ projectId }: { projectId?: string }) {
   const navigate = useNavigate()
   const [isLoadingData, setIsLoadingData] = useState(false)
@@ -91,8 +111,11 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             mgnt_status: apiData.general?.mgnt_status || 'none',
             building_amount: apiData.general?.building_amount || 'None',
             building_description: apiData.general?.building_description || '',
-            date_construction: apiData.progress?.date_construction || '',
-            date_finish: apiData.progress?.date_finish || '',
+            date_construction: unixToYMD(
+              apiData.progress?.date_construction ||
+                apiData.progress?.date_start
+            ),
+            date_finish: unixToYMD(apiData.progress?.date_finish),
             address_th: apiData.address?.address_th || '',
             address_en: apiData.address?.address_en || '',
             subdistrict_th: apiData.address?.subdistrict_th || '',
@@ -650,10 +673,10 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
           progress: {
             progress_overall: formData.progress_overall,
             progress_system: formData.progress_system,
-            date_start: formData.date_construction,
-            date_construction: formData.date_construction,
+            date_construction: ymdToUnix(formData.date_construction),
+            date_start: ymdToUnix(formData.date_construction),
             progress_architect: formData.progress_architect,
-            date_finish: formData.date_finish,
+            date_finish: ymdToUnix(formData.date_finish),
             progress_structure: formData.progress_structure,
             progress_wiring: formData.progress_wiring
           },

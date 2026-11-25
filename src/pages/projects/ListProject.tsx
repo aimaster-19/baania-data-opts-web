@@ -178,7 +178,9 @@ export default function ListProject() {
     setSearchInput(value)
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      setSearchQuery(value)
+      const q = value.trim()
+      // ค้นหาเมื่อพิมพ์ > 2 ตัวอักษร (น้อยกว่านั้น = ไม่กรอง)
+      setSearchQuery(q.length > 2 ? q : '')
       setCurrentPage(1)
     }, SEARCH_DEBOUNCE_MS)
   }
