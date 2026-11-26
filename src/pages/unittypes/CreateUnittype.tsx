@@ -243,7 +243,10 @@ export default function CreateUnittype() {
     num_aircond: '',
     num_util: '',
     num_storage: '',
-    is_half_floor: false
+    is_half_floor: false,
+    rai: '',
+    ngan: '',
+    wa: ''
   })
   const [meta, setMeta] = useState({ meta_keywords: '', meta_description: '' })
   const [financial, setFinancial] = useState({
@@ -295,6 +298,7 @@ export default function CreateUnittype() {
       detail: s(g.detail)
     })
     const dt = (d.detail || {}) as AnyObj
+    const al = (dt.area_land || {}) as AnyObj
     setDetail({
       num_bed: s(dt.num_bed),
       num_bath: s(dt.num_bath),
@@ -309,7 +313,10 @@ export default function CreateUnittype() {
       num_aircond: s(dt.num_aircond),
       num_util: s(dt.num_util),
       num_storage: s(dt.num_storage),
-      is_half_floor: !!dt.is_half_floor
+      is_half_floor: !!dt.is_half_floor,
+      rai: s(al.rai),
+      ngan: s(al.ngan),
+      wa: s(al.wa)
     })
     const m = (d.meta || {}) as AnyObj
     setMeta({
@@ -545,7 +552,11 @@ export default function CreateUnittype() {
           num_util: num(detail.num_util),
           num_storage: num(detail.num_storage),
           is_half_floor: detail.is_half_floor,
-          area_land: {}
+          area_land: {
+            rai: num(detail.rai),
+            ngan: num(detail.ngan),
+            wa: num(detail.wa)
+          }
         },
         meta: {
           meta_keywords: meta.meta_keywords,
@@ -775,6 +786,32 @@ export default function CreateUnittype() {
                     developer.name_en ||
                     '— ไม่พบข้อมูลผู้พัฒนาจากโครงการ —'}
                 </div>
+              </div>
+            </div>
+
+            <div>
+              <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+                เนื้อที่ที่ดิน
+              </label>
+              <div className='grid grid-cols-3 gap-5'>
+                <NumField
+                  label='ไร่'
+                  value={detail.rai}
+                  onChange={(v) => setDetail((p) => ({ ...p, rai: v }))}
+                  step='any'
+                />
+                <NumField
+                  label='งาน'
+                  value={detail.ngan}
+                  onChange={(v) => setDetail((p) => ({ ...p, ngan: v }))}
+                  step='any'
+                />
+                <NumField
+                  label='ตารางวา'
+                  value={detail.wa}
+                  onChange={(v) => setDetail((p) => ({ ...p, wa: v }))}
+                  step='any'
+                />
               </div>
             </div>
 
@@ -1269,12 +1306,14 @@ function NumField({
   label,
   value,
   onChange,
-  placeholder = ''
+  placeholder = '',
+  step
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  step?: string
 }) {
   return (
     <div>
@@ -1284,6 +1323,7 @@ function NumField({
       <input
         type='number'
         value={value}
+        step={step}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={inputClass}

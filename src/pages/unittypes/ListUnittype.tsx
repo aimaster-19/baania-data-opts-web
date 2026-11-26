@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Home,
@@ -17,7 +17,6 @@ import { getApiErrorMessage } from '../../lib/errors'
 import type { PaginationMeta } from '../../types/common'
 
 const ITEMS_PER_PAGE = 20
-const SEARCH_DEBOUNCE_MS = 400
 
 interface UnittypeRow {
   _id: string
@@ -69,7 +68,6 @@ export default function ListUnittype() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('ทั้งหมด') // ทั้งหมด | ออนไลน์ | ออฟไลน์ | ลบ
   const [currentPage, setCurrentPage] = useState(1)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const fetchUnittypes = useCallback(async () => {
     setIsLoading(true)
@@ -106,15 +104,11 @@ export default function ListUnittype() {
     fetchUnittypes()
   }, [fetchUnittypes])
 
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value)
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      const q = value.trim()
-      // ค้นหาเมื่อพิมพ์ > 2 ตัวอักษร (น้อยกว่านั้น = ไม่กรอง)
-      setSearchQuery(q.length > 2 ? q : '')
-      setCurrentPage(1)
-    }, SEARCH_DEBOUNCE_MS)
+  // ค้นหาเมื่อกดปุ่ม/Enter เท่านั้น (ไม่ auto search ระหว่างพิมพ์)
+  const handleSearchSubmit = () => {
+    const q = searchInput.trim()
+    setCurrentPage(1)
+    setSearchQuery(q)
   }
 
   const handleDelete = async (id: string) => {
@@ -149,10 +143,20 @@ export default function ListUnittype() {
         <Search className='w-5 h-5 text-slate-400 ml-2' />
         <input
           value={searchInput}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSearchSubmit()
+          }}
           placeholder='ค้นหาชื่อแบบบ้าน, Project KeyID, KeyID แบบบ้าน...'
           className='flex-1 outline-none text-sm bg-transparent py-1.5'
         />
+        <button
+          onClick={handleSearchSubmit}
+          className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors'
+        >
+          <Search className='w-4 h-4' />
+          ค้นหา
+        </button>
         <select
           value={selectedStatus}
           onChange={(e) => {
