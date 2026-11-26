@@ -205,11 +205,11 @@ export const ImagesTab: React.FC<ProjectTabProps> = ({
             label='รูปภาพบรรยากาศภายในและภายนอก'
             onUpload={handleGalleryUpload}
             onRemove={handleGalleryRemove}
-            maxFiles={10}
+            maxFiles={20}
             initialImages={galleryInitial}
           />
           <p className='text-[11px] text-slate-400 bg-slate-50 p-3 rounded-xl border border-slate-100'>
-            💡 ข้อแนะนำ: คุณสามารถเลือกรูปภาพพร้อมกันได้หลายรูป (รองรับสูงสุด 10
+            💡 ข้อแนะนำ: คุณสามารถเลือกรูปภาพพร้อมกันได้หลายรูป (รองรับสูงสุด 20
             รูป)
           </p>
         </div>

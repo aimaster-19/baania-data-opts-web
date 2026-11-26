@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Home,
@@ -11,7 +11,6 @@ import {
   Settings,
   Image as ImageIcon,
   Video as VideoIcon,
-  Search,
   X,
   Power,
   ChevronRight
@@ -20,13 +19,13 @@ import api from '../../lib/axios'
 import { getApiErrorMessage } from '../../lib/errors'
 import { ImageUpload } from '../../components/ProjectFormTabs/ImageUpload'
 import { usePropertyTypes } from '../../hooks/usePropertyTypes'
-import type { DeveloperDoc } from '../../types/developer'
 
 type AnyObj = Record<string, unknown>
 
 // ── สร้าง snapshot (ref) ของโครงการ ──
 function buildProjectRef(projectDoc: AnyObj) {
-  const keyId = String(projectDoc._id || projectDoc.keyId || '')
+  // ใช้ keyId ของ project ตรงๆ (ไม่ใช้ _id)
+  const keyId = String(projectDoc.keyId || '')
   const d = (projectDoc.data || {}) as AnyObj
   const g = (d.general || {}) as AnyObj
   const fn = (d.footnote || {}) as AnyObj
@@ -388,6 +387,13 @@ export default function CreateUnittype() {
         const pinfo = (pd.info || {}) as AnyObj
         setProjectRef(buildProjectRef(pdoc))
         setRefTitle(s(pinfo.title_th) || s(pinfo.title_en))
+        // developer ดึงจากโครงการ ไม่ต้องเลือกเอง
+        const pdev = (pd.developer || {}) as AnyObj
+        setDeveloper({
+          id: Number(pdev.id) || 0,
+          name_th: s(pdev.display_name) || s(pdev.title_th),
+          name_en: s(pdev.title_en)
+        })
         setUnitAddress({
           province_th: s(addr.province_th),
           province_en: s(addr.province_en),
@@ -563,8 +569,9 @@ export default function CreateUnittype() {
             webp_thumbnail: ''
           },
           overall: overall.map((o) => ({
-            title: o.title,
-            alt: '',
+            // ใส่ title / alt ให้ด้วย (ใช้ชื่อแบบบ้านถ้าไม่ได้ระบุ)
+            title: o.title || info.title_th.trim(),
+            alt: o.title || info.title_th.trim(),
             url: o.url,
             thumbnail: o.thumbnail,
             webp_main: '',
@@ -759,7 +766,16 @@ export default function CreateUnittype() {
                   ))}
                 </select>
               </div>
-              <DeveloperPicker value={developer} onSelect={setDeveloper} />
+              <div>
+                <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
+                  ผู้พัฒนาโครงการ (ดึงจากโครงการ)
+                </label>
+                <div className='w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700'>
+                  {developer.name_th ||
+                    developer.name_en ||
+                    '— ไม่พบข้อมูลผู้พัฒนาจากโครงการ —'}
+                </div>
+              </div>
             </div>
 
             <h2 className='text-lg font-bold text-slate-800 border-b pb-2 mt-2'>
@@ -1054,7 +1070,7 @@ export default function CreateUnittype() {
                 onRemove={(i) =>
                   setOverall((prev) => prev.filter((_, idx) => idx !== i))
                 }
-                maxFiles={15}
+                maxFiles={20}
                 initialImages={overall.map((o) => o.url)}
               />
             </div>
@@ -1298,123 +1314,6 @@ function TextArea({
         rows={rows}
         className={inputClass + ' resize-y'}
       />
-    </div>
-  )
-}
-
-// ── developer picker (ค้นหาเลือกเอง) ──
-function DeveloperPicker({
-  value,
-  onSelect
-}: {
-  value: { id: number; name_th: string; name_en: string }
-  onSelect: (d: { id: number; name_th: string; name_en: string }) => void
-}) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<DeveloperDoc[]>([])
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-
-  const search = (q: string) => {
-    setQuery(q)
-    clearTimeout(debounceRef.current)
-    if (!q.trim()) {
-      setResults([])
-      setOpen(false)
-      return
-    }
-    debounceRef.current = setTimeout(async () => {
-      setLoading(true)
-      try {
-        const res = await api.get('/developers', {
-          params: { title_th: q.trim(), limit: 15 }
-        })
-        setResults(res.data?.data || [])
-        setOpen(true)
-      } catch {
-        setResults([])
-      } finally {
-        setLoading(false)
-      }
-    }, 400)
-  }
-
-  if (value.id) {
-    return (
-      <div>
-        <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
-          ผู้พัฒนา
-        </label>
-        <div className='flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl'>
-          <Building2 className='w-4 h-4 text-blue-500 shrink-0' />
-          <span className='text-sm font-bold text-blue-900 flex-1 truncate'>
-            {value.name_th || value.name_en}
-          </span>
-          <button
-            type='button'
-            onClick={() => onSelect({ id: 0, name_th: '', name_en: '' })}
-            className='text-slate-400 hover:text-red-500'
-          >
-            <X className='w-4 h-4' />
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className='relative'>
-      <label className='block text-sm font-semibold text-slate-700 mb-1.5'>
-        ผู้พัฒนา
-      </label>
-      <div className='relative'>
-        <Search className='w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2' />
-        <input
-          type='text'
-          value={query}
-          onChange={(e) => search(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder='ค้นหาผู้พัฒนา...'
-          className={inputClass + ' pl-9'}
-        />
-      </div>
-      {open && (
-        <div className='absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto'>
-          {loading ? (
-            <div className='px-4 py-3 text-sm text-slate-400'>
-              กำลังค้นหา...
-            </div>
-          ) : results.length === 0 ? (
-            <div className='px-4 py-3 text-sm text-slate-400'>
-              ไม่พบผู้พัฒนา
-            </div>
-          ) : (
-            results.map((doc) => {
-              const d = doc.data || {}
-              const name_th = String(d.display_name || d.title_th || '-')
-              return (
-                <button
-                  key={doc._id}
-                  type='button'
-                  onClick={() => {
-                    onSelect({
-                      id: Number(d.id) || 0,
-                      name_th,
-                      name_en: String(d.title_en || '')
-                    })
-                    setOpen(false)
-                    setQuery('')
-                  }}
-                  className='w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 transition-colors'
-                >
-                  {name_th}
-                </button>
-              )
-            })
-          )}
-        </div>
-      )}
     </div>
   )
 }

@@ -72,13 +72,7 @@ function SaleStatusBadge({ status }: { status: string }) {
       text: 'text-rose-700',
       dot: 'bg-rose-500'
     },
-    'coming-soon': {
-      label: 'เปิดขายเร็ว ๆ นี้',
-      bg: 'bg-blue-50',
-      text: 'text-blue-700',
-      dot: 'bg-blue-500'
-    },
-    'pre-sale': {
+    presale: {
       label: 'พรีเซล',
       bg: 'bg-amber-50',
       text: 'text-amber-700',

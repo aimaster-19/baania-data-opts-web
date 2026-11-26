@@ -53,6 +53,9 @@ const ymdToUnix = (v: string) => {
   return isNaN(t) ? 0 : Math.floor(t / 1000)
 }
 
+// ราคกรอก 0 หรือว่าง -> ส่ง null
+const nullIfZero = (v: unknown) => (Number(v) > 0 ? v : null)
+
 export default function ProjectForm({ projectId }: { projectId?: string }) {
   const navigate = useNavigate()
   const [isLoadingData, setIsLoadingData] = useState(false)
@@ -611,11 +614,12 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             info_other_fac: formData.info_other_fac
           },
           financial: {
-            price_land: formData.price_land,
-            price_start: formData.price_start,
-            price_end: formData.price_end,
-            price_start_per_unit: formData.price_start_per_unit,
-            price_end_per_unit: formData.price_end_per_unit,
+            // ราคกรอก 0 หรือว่าง -> ส่ง null
+            price_land: nullIfZero(formData.price_land),
+            price_start: nullIfZero(formData.price_start),
+            price_end: nullIfZero(formData.price_end),
+            price_start_per_unit: nullIfZero(formData.price_start_per_unit),
+            price_end_per_unit: nullIfZero(formData.price_end_per_unit),
             price_facility: formData.price_facility,
             unitof_price_facility: formData.unitof_price_facility,
             ratio_yield: formData.ratio_yield,
@@ -647,7 +651,14 @@ export default function ProjectForm({ projectId }: { projectId?: string }) {
             detail: detailText
           },
           id: keyId,
-          images: formData.images,
+          images: {
+            ...formData.images,
+            // ใส่ title ให้รูป gallery ด้วย (ใช้ชื่อโครงการถ้าไม่ได้ระบุ)
+            overall: formData.images.overall.map((o) => ({
+              ...o,
+              title: o.title || formData.title_th
+            }))
+          },
           info: {
             search_keyword: formData.search_keyword,
             code: formData.code,
